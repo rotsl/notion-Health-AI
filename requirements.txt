@@ -12,7 +12,7 @@ python-multipart>=0.0.9
 aiofiles>=23.2.1
 pydantic>=2.6.0
 pandas>=2.2.0
-numpy>=1.26.0  # Use numpy==2.2.6 if running TRIBEv2 (see optional install below)
+numpy==2.2.6  # Pinned for TRIBEv2 compatibility (torch 2.5.1 requires numpy <2.3)
 python-dateutil>=2.8.2
 rich>=13.7.0
 click>=8.1.7
@@ -23,17 +23,16 @@ toml>=0.10.2
 loguru>=0.7.2
 validators>=0.22.0
 
-# TRIBEv2 brain model (optional — requires HuggingFace token with LLaMA 3.2 access)
-# Without these the system uses simulation-based cognitive analysis (fully functional)
-# IMPORTANT: Requires native arm64 Python 3.11+ on Apple Silicon
-#   Use: /opt/homebrew/bin/python3.11 -m venv venv_arm64
-# Install TRIBEv2:
-#   git clone https://github.com/facebookresearch/tribev2 /tmp/tribev2
-#   pip install "torch==2.5.1" "numpy==2.2.6" whisperx
-#   pip install -e /tmp/tribev2
-# torch==2.5.1
-# torchvision==0.20.1
-# whisperx  # uses Whisper for audio transcription in text pipeline
+# TRIBEv2 brain model — requires HuggingFace token with LLaMA 3.2 access
+# huggingface_hub is required for HF authentication (login + gated model download)
+huggingface_hub>=0.23.0
+torch==2.5.1
+torchvision==0.20.1
+whisperx  # uses Whisper for audio transcription in text pipeline
+# TRIBEv2 package — installed from the official Facebook Research repo
+# Run: pip install git+https://github.com/facebookresearch/tribev2.git
+# or add the following line to a Railway build command / Dockerfile:
+#   RUN pip install git+https://github.com/facebookresearch/tribev2.git
 
 # Brain visualization (optional — needed for brain_viz.py surface plots and interactive HTML)
 # pip install plotly nilearn nibabel imageio[ffmpeg] pyvista
