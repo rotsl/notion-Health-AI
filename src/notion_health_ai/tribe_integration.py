@@ -189,6 +189,10 @@ class TribeModelWrapper:
         TRIBEv2 uses its own TribeModel class (not AutoModel).
         The model downloads ~676 MB checkpoint on first run.
 
+        The model is gated on HuggingFace and requires authentication.
+        Set the ``HUGGING_FACE_TOKEN`` (or ``HF_TOKEN``) environment variable
+        to a token with read access to ``facebook/tribev2``.
+
         Args:
             cache_dir: Directory to cache downloaded model and features
 
@@ -206,19 +210,57 @@ class TribeModelWrapper:
 
             os.makedirs(cache_dir, exist_ok=True)
 
-            # Authenticate with HuggingFace so gated model weights can be downloaded.
+            # ------------------------------------------------------------------
+            # Step 1: Resolve and validate the HuggingFace token.
+            # HUGGING_FACE_TOKEN is the primary env var; HF_TOKEN is the fallback
+            # used by the huggingface_hub library itself.
+            # ------------------------------------------------------------------
             hf_token = os.getenv("HUGGING_FACE_TOKEN") or os.getenv("HF_TOKEN")
-            if hf_token:
-                try:
-                    from huggingface_hub import login as _hf_login
 
-                    _hf_login(token=hf_token, add_to_git_credential=False)
-                    logger.info("Authenticated with HuggingFace using HUGGING_FACE_TOKEN")
-                except Exception as _login_err:
-                    logger.warning(f"HuggingFace login warning (non-fatal): {_login_err}")
-            else:
-                logger.warning("No HUGGING_FACE_TOKEN found — download of gated model may fail")
+            if not hf_token:
+                logger.error(
+                    "No HuggingFace token found. Set the HUGGING_FACE_TOKEN environment "
+                    "variable to a token with read access to facebook/tribev2. "
+                    "The model is gated and cannot be downloaded without authentication. "
+                    "Falling back to simulated predictions."
+                )
+                return False
 
+            # Log masked token for debugging (show first 4 and last 4 chars only).
+            masked = f"{hf_token[:4]}{'*' * max(0, len(hf_token) - 8)}{hf_token[-4:]}"
+            logger.info(f"HuggingFace token found: {masked} (length={len(hf_token)})")
+
+            # ------------------------------------------------------------------
+            # Step 2: Authenticate with HuggingFace Hub BEFORE any download.
+            # This sets the global credential used by all subsequent hub calls.
+            # ------------------------------------------------------------------
+            try:
+                from huggingface_hub import login as _hf_login, HfFolder
+
+                _hf_login(token=hf_token, add_to_git_credential=False)
+                # Also persist the token in HfFolder so it is picked up by any
+                # internal hub calls that bypass the global login state.
+                HfFolder.save_token(hf_token)
+                logger.info(
+                    "Successfully authenticated with HuggingFace Hub using HUGGING_FACE_TOKEN"
+                )
+            except Exception as login_err:
+                # A login failure here almost certainly means the token is invalid
+                # or the hub is unreachable — treat it as fatal for gated models.
+                logger.error(
+                    f"HuggingFace authentication failed: {login_err}. "
+                    "Verify that HUGGING_FACE_TOKEN is a valid token with read access "
+                    "to facebook/tribev2 and that you have accepted the model license at "
+                    "https://huggingface.co/facebook/tribev2. "
+                    "Falling back to simulated predictions."
+                )
+                return False
+
+            # ------------------------------------------------------------------
+            # Step 3: Load the model, passing the token explicitly so the
+            # download is authenticated even if the global login state is not
+            # propagated into the tribev2 internals.
+            # ------------------------------------------------------------------
             logger.info(f"Loading TRIBEv2 model from HuggingFace: {self.MODEL_NAME}")
             logger.info("First run will download ~676 MB checkpoint...")
 
@@ -227,22 +269,39 @@ class TribeModelWrapper:
             # The internal feature extractors (Whisper, LLaMA) only support cuda/cpu,
             # so we override their device to cpu on non-CUDA systems.
             feature_device = "cuda" if TORCH_AVAILABLE and torch.cuda.is_available() else "cpu"
-            self.model = _TribeModelClass.from_pretrained(
-                self.MODEL_NAME,
-                cache_folder=cache_dir,
-                device=self.device,
-                config_update={
+
+            # Build kwargs — pass token explicitly if the API accepts it so the
+            # download is authenticated regardless of global hub state.
+            load_kwargs: Dict[str, Any] = {
+                "cache_folder": cache_dir,
+                "device": self.device,
+                "config_update": {
                     "data.text_feature.device": feature_device,
                     "data.audio_feature.device": feature_device,
                 },
-            )
+            }
+            try:
+                import inspect
+
+                if "token" in inspect.signature(_TribeModelClass.from_pretrained).parameters:
+                    load_kwargs["token"] = hf_token
+                    logger.debug("Passing token explicitly to TribeModel.from_pretrained()")
+            except Exception:
+                pass  # Signature introspection failed — proceed without explicit token kwarg
+
+            self.model = _TribeModelClass.from_pretrained(self.MODEL_NAME, **load_kwargs)
 
             self.is_loaded = True
             logger.info(f"TRIBEv2 model loaded successfully on {self.device}")
             return True
 
         except Exception as e:
-            logger.error(f"Failed to load TRIBEv2 model: {e}")
+            logger.error(
+                f"Failed to load TRIBEv2 model: {e}. "
+                "If this is a 401/403 error, ensure HUGGING_FACE_TOKEN is set correctly "
+                "and that you have accepted the model license at "
+                "https://huggingface.co/facebook/tribev2."
+            )
             return False
 
     async def predict_response(
@@ -654,8 +713,18 @@ class TribeModelWrapper:
         """
         Generate simulated brain response predictions.
 
-        This is used when the actual model is not available,
-        providing reasonable approximations based on research.
+        This fallback is used when the TRIBEv2 model is not loaded.  Common
+        reasons include:
+
+        * ``HUGGING_FACE_TOKEN`` / ``HF_TOKEN`` environment variable is not set
+          or contains an invalid token.
+        * The token does not have read access to ``facebook/tribev2``, or the
+          model license has not been accepted at
+          https://huggingface.co/facebook/tribev2.
+        * The ``torch`` or ``tribev2`` Python packages are not installed.
+
+        To enable real fMRI predictions, set ``HUGGING_FACE_TOKEN`` to a valid
+        HuggingFace token and ensure the model dependencies are installed.
         """
         # Base predictions that would come from the actual model
         predictions = {
