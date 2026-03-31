@@ -48,7 +48,7 @@ def format_date(dt: date) -> str:
 
 def format_time(t) -> str:
     """Format a time as HH:MM."""
-    if hasattr(t, 'strftime'):
+    if hasattr(t, "strftime"):
         return t.strftime("%H:%M")
     return str(t)
 
@@ -150,7 +150,7 @@ def calculate_bmi(weight_lbs: float, height_inches: float) -> float:
         return 0
 
     # BMI = (weight in pounds * 703) / (height in inches)^2
-    bmi = (weight_lbs * 703) / (height_inches ** 2)
+    bmi = (weight_lbs * 703) / (height_inches**2)
     return round(bmi, 1)
 
 
@@ -214,8 +214,8 @@ def calculate_trend(values: List[float]) -> Optional[str]:
 
     # Simple comparison of first and last third
     n = len(values)
-    first_third = values[:n // 3]
-    last_third = values[2 * n // 3:]
+    first_third = values[: n // 3]
+    last_third = values[2 * n // 3 :]
 
     avg_first = sum(first_third) / len(first_third)
     avg_last = sum(last_third) / len(last_third)
@@ -300,7 +300,7 @@ def truncate_text(text: str, max_length: int = 100) -> str:
     """
     if len(text) <= max_length:
         return text
-    return text[:max_length - 3] + "..."
+    return text[: max_length - 3] + "..."
 
 
 def safe_float(value: Any, default: float = 0.0) -> float:
@@ -403,10 +403,14 @@ def create_health_report(
         Formatted report string
     """
     if format_type == "json":
-        return json.dumps({
-            "summary": summary,
-            "insights": insights,
-        }, indent=2, default=str)
+        return json.dumps(
+            {
+                "summary": summary,
+                "insights": insights,
+            },
+            indent=2,
+            default=str,
+        )
 
     lines = []
     lines.append("=" * 50)

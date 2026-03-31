@@ -135,7 +135,9 @@ class TestHealthManager:
         assert "Headache" in result.message
 
     @pytest.mark.asyncio
-    async def test_get_health_metrics(self, health_manager, mock_notion_client, mock_health_metrics):
+    async def test_get_health_metrics(
+        self, health_manager, mock_notion_client, mock_health_metrics
+    ):
         """Test retrieving health metrics."""
         health_manager.client = mock_notion_client
         mock_notion_client.query_health_metrics = AsyncMock(return_value=mock_health_metrics)
@@ -149,7 +151,9 @@ class TestHealthManager:
         assert metrics[0].weight == 165.5
 
     @pytest.mark.asyncio
-    async def test_get_health_summary(self, health_manager, mock_notion_client, mock_health_metrics):
+    async def test_get_health_summary(
+        self, health_manager, mock_notion_client, mock_health_metrics
+    ):
         """Test generating health summary."""
         health_manager.client = mock_notion_client
         mock_notion_client.query_health_metrics = AsyncMock(return_value=mock_health_metrics)
@@ -196,7 +200,7 @@ class TestHealthModels:
     def test_appointment_creation(self):
         """Test Appointment model creation."""
         from datetime import time
-        
+
         appt = Appointment(
             appointment_date=date.today(),
             appointment_time=time(10, 30),

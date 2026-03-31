@@ -27,37 +27,44 @@ from loguru import logger
 
 try:
     import plotly.graph_objects as go
+
     PLOTLY_AVAILABLE = True
 except ImportError:
     PLOTLY_AVAILABLE = False
 
 try:
     from nilearn import datasets as _nl_datasets, surface as _nl_surface
+
     NILEARN_AVAILABLE = True
 except ImportError:
     NILEARN_AVAILABLE = False
 
 try:
     import matplotlib
+
     matplotlib.use("Agg")  # non-interactive backend; safe for server/CLI use
     import matplotlib.pyplot as plt
     import matplotlib.animation as animation
+
     MATPLOTLIB_AVAILABLE = True
 except ImportError:
     MATPLOTLIB_AVAILABLE = False
 
 try:
     import imageio.v2 as imageio
+
     IMAGEIO_AVAILABLE = True
 except ImportError:
     try:
         import imageio
+
         IMAGEIO_AVAILABLE = True
     except ImportError:
         IMAGEIO_AVAILABLE = False
 
 try:
     import pyvista as pv
+
     PYVISTA_AVAILABLE = True
 except ImportError:
     PYVISTA_AVAILABLE = False
@@ -65,7 +72,7 @@ except ImportError:
 # ── Project paths ────────────────────────────────────────────────────────────
 
 _HERE = Path(__file__).resolve()
-PROJECT_ROOT = _HERE.parent.parent.parent          # src/notion_health_ai → src → project root
+PROJECT_ROOT = _HERE.parent.parent.parent  # src/notion_health_ai → src → project root
 VIZ_DIR = PROJECT_ROOT / "visualizations"
 
 # Number of vertices per hemisphere in fsaverage5
@@ -74,14 +81,16 @@ _N_VERTS_PER_HEMI = 10242  # 10242 × 2 = 20484 total
 
 # ── Mesh cache ───────────────────────────────────────────────────────────────
 
+
 class _MeshCache:
     """Singleton: loads fsaverage5 mesh once and caches it."""
+
     _coords_lh: Optional[np.ndarray] = None
     _faces_lh: Optional[np.ndarray] = None
     _coords_rh: Optional[np.ndarray] = None
     _faces_rh: Optional[np.ndarray] = None
     _loaded: bool = False
-    _surf_lh: Optional[str] = None   # nilearn surface file paths
+    _surf_lh: Optional[str] = None  # nilearn surface file paths
     _surf_rh: Optional[str] = None
 
     @classmethod
@@ -104,6 +113,7 @@ class _MeshCache:
 
 
 # ── Main visualizer class ────────────────────────────────────────────────────
+
 
 class BrainVisualizer:
     """
@@ -183,9 +193,9 @@ class BrainVisualizer:
         n_timesteps, n_verts = preds_2d.shape
 
         coords_lh = _MeshCache._coords_lh
-        faces_lh  = _MeshCache._faces_lh
+        faces_lh = _MeshCache._faces_lh
         coords_rh = _MeshCache._coords_rh.copy()
-        faces_rh  = _MeshCache._faces_rh
+        faces_rh = _MeshCache._faces_rh
         # Offset RH so both hemispheres sit side-by-side
         x_gap = (coords_lh[:, 0].max() - coords_rh[:, 0].min()) + 25
         coords_rh[:, 0] += x_gap
@@ -196,25 +206,42 @@ class BrainVisualizer:
 
         def _mesh_traces(t: int) -> List[go.Mesh3d]:
             d_lh = preds_2d[t, :half].tolist()
-            d_rh = preds_2d[t, half:half * 2].tolist()
+            d_rh = preds_2d[t, half : half * 2].tolist()
             base = dict(
-                colorscale=colorscale, cmin=vmin, cmax=vmax,
+                colorscale=colorscale,
+                cmin=vmin,
+                cmax=vmax,
                 lighting=dict(ambient=0.5, diffuse=0.8, specular=0.3, roughness=0.5),
                 lightposition=dict(x=100, y=200, z=150),
                 hoverinfo="skip",
             )
             lh = go.Mesh3d(
-                x=coords_lh[:, 0], y=coords_lh[:, 1], z=coords_lh[:, 2],
-                i=faces_lh[:, 0], j=faces_lh[:, 1], k=faces_lh[:, 2],
-                intensity=d_lh, showscale=False, name="Left", **base,
+                x=coords_lh[:, 0],
+                y=coords_lh[:, 1],
+                z=coords_lh[:, 2],
+                i=faces_lh[:, 0],
+                j=faces_lh[:, 1],
+                k=faces_lh[:, 2],
+                intensity=d_lh,
+                showscale=False,
+                name="Left",
+                **base,
             )
             rh = go.Mesh3d(
-                x=coords_rh[:, 0], y=coords_rh[:, 1], z=coords_rh[:, 2],
-                i=faces_rh[:, 0], j=faces_rh[:, 1], k=faces_rh[:, 2],
-                intensity=d_rh, showscale=True, name="Right",
+                x=coords_rh[:, 0],
+                y=coords_rh[:, 1],
+                z=coords_rh[:, 2],
+                i=faces_rh[:, 0],
+                j=faces_rh[:, 1],
+                k=faces_rh[:, 2],
+                intensity=d_rh,
+                showscale=True,
+                name="Right",
                 colorbar=dict(
                     title=dict(text="Activation", font=dict(color="white")),
-                    tickfont=dict(color="white"), thickness=18, len=0.7,
+                    tickfont=dict(color="white"),
+                    thickness=18,
+                    len=0.7,
                 ),
                 **base,
             )
@@ -241,40 +268,60 @@ class BrainVisualizer:
             fig = go.Figure(data=_mesh_traces(0), layout=go.Layout(**layout_base))
         else:
             # Build animation frames + slider + play/pause buttons
-            frames = [
-                go.Frame(data=_mesh_traces(t), name=str(t))
-                for t in range(n_timesteps)
-            ]
+            frames = [go.Frame(data=_mesh_traces(t), name=str(t)) for t in range(n_timesteps)]
             slider_steps = [
                 dict(
-                    args=[[str(t)], dict(mode="immediate",
-                                        frame=dict(duration=400, redraw=True))],
+                    args=[[str(t)], dict(mode="immediate", frame=dict(duration=400, redraw=True))],
                     method="animate",
                     label=f"{t}s",
                 )
                 for t in range(n_timesteps)
             ]
-            layout_base["updatemenus"] = [dict(
-                type="buttons", showactive=False,
-                y=-0.08, x=0.5, xanchor="center",
-                buttons=[
-                    dict(label="▶  Play", method="animate",
-                         args=[None, dict(frame=dict(duration=450, redraw=True),
-                                         fromcurrent=True, transition=dict(duration=0))]),
-                    dict(label="⏸  Pause", method="animate",
-                         args=[[None], dict(mode="immediate",
-                                            frame=dict(duration=0, redraw=False))]),
-                ],
-                font=dict(color="black"),
-            )]
-            layout_base["sliders"] = [dict(
-                active=0, steps=slider_steps,
-                currentvalue=dict(prefix="Timestep: ", font=dict(color="white")),
-                font=dict(color="white"),
-                bgcolor="rgba(255,255,255,0.1)",
-                bordercolor="rgba(255,255,255,0.3)",
-                x=0.05, len=0.9, y=-0.02,
-            )]
+            layout_base["updatemenus"] = [
+                dict(
+                    type="buttons",
+                    showactive=False,
+                    y=-0.08,
+                    x=0.5,
+                    xanchor="center",
+                    buttons=[
+                        dict(
+                            label="▶  Play",
+                            method="animate",
+                            args=[
+                                None,
+                                dict(
+                                    frame=dict(duration=450, redraw=True),
+                                    fromcurrent=True,
+                                    transition=dict(duration=0),
+                                ),
+                            ],
+                        ),
+                        dict(
+                            label="⏸  Pause",
+                            method="animate",
+                            args=[
+                                [None],
+                                dict(mode="immediate", frame=dict(duration=0, redraw=False)),
+                            ],
+                        ),
+                    ],
+                    font=dict(color="black"),
+                )
+            ]
+            layout_base["sliders"] = [
+                dict(
+                    active=0,
+                    steps=slider_steps,
+                    currentvalue=dict(prefix="Timestep: ", font=dict(color="white")),
+                    font=dict(color="white"),
+                    bgcolor="rgba(255,255,255,0.1)",
+                    bordercolor="rgba(255,255,255,0.3)",
+                    x=0.05,
+                    len=0.9,
+                    y=-0.02,
+                )
+            ]
             fig = go.Figure(
                 data=_mesh_traces(0),
                 frames=frames,
@@ -285,8 +332,12 @@ class BrainVisualizer:
         if n_timesteps > 1:
             fig.add_annotation(
                 text=f"TRIBEv2 · {n_timesteps} timesteps · {n_verts} cortical vertices",
-                xref="paper", yref="paper", x=0.5, y=-0.14,
-                showarrow=False, font=dict(size=11, color="rgba(255,255,255,0.5)"),
+                xref="paper",
+                yref="paper",
+                x=0.5,
+                y=-0.14,
+                showarrow=False,
+                font=dict(size=11, color="rgba(255,255,255,0.5)"),
             )
 
         out_name = output_name or self._ts("brain_interactive")
@@ -330,33 +381,43 @@ class BrainVisualizer:
         preds_1d = self._ensure_1d(preds)
         half = min(_N_VERTS_PER_HEMI, len(preds_1d) // 2)
         d_lh = preds_1d[:half]
-        d_rh = preds_1d[half: half * 2]
+        d_rh = preds_1d[half : half * 2]
         vmax = float(np.percentile(preds_1d, 99))
 
         fsaverage = datasets.fetch_surf_fsaverage("fsaverage5")
         panels = [
-            (fsaverage.infl_left,  d_lh, "left",  "lateral",  "Lateral Left"),
-            (fsaverage.infl_left,  d_lh, "left",  "medial",   "Medial Left"),
-            (fsaverage.infl_right, d_rh, "right", "lateral",  "Lateral Right"),
-            (fsaverage.infl_right, d_rh, "right", "medial",   "Medial Right"),
+            (fsaverage.infl_left, d_lh, "left", "lateral", "Lateral Left"),
+            (fsaverage.infl_left, d_lh, "left", "medial", "Medial Left"),
+            (fsaverage.infl_right, d_rh, "right", "lateral", "Lateral Right"),
+            (fsaverage.infl_right, d_rh, "right", "medial", "Medial Right"),
         ]
 
-        fig, axes = plt.subplots(1, 4, figsize=(22, 5),
-                                 subplot_kw={"projection": "3d"})
+        fig, axes = plt.subplots(1, 4, figsize=(22, 5), subplot_kw={"projection": "3d"})
         fig.suptitle(title, fontsize=14, y=1.0, weight="bold")
 
         for ax, (mesh, data, hemi, view, label) in zip(axes, panels):
             try:
                 plotting.plot_surf_stat_map(
-                    mesh, data, hemi=hemi, view=view,
-                    cmap=cmap, vmax=vmax, colorbar=False,
-                    bg_on_data=True, axes=ax,
+                    mesh,
+                    data,
+                    hemi=hemi,
+                    view=view,
+                    cmap=cmap,
+                    vmax=vmax,
+                    colorbar=False,
+                    bg_on_data=True,
+                    axes=ax,
                 )
             except TypeError:
                 # Older nilearn: no axes kwarg — render separately
                 disp = plotting.plot_surf_stat_map(
-                    mesh, data, hemi=hemi, view=view,
-                    cmap=cmap, vmax=vmax, colorbar=False,
+                    mesh,
+                    data,
+                    hemi=hemi,
+                    view=view,
+                    cmap=cmap,
+                    vmax=vmax,
+                    colorbar=False,
                     bg_on_data=True,
                 )
                 disp.axes.set_title(label)
@@ -372,8 +433,9 @@ class BrainVisualizer:
         plt.tight_layout(rect=[0, 0, 1, 0.97])
         out_name = output_name or self._ts("brain_static")
         out_path = self.output_dir / f"{out_name}.png"
-        plt.savefig(str(out_path), dpi=150, bbox_inches="tight",
-                    facecolor="white", transparent=False)
+        plt.savefig(
+            str(out_path), dpi=150, bbox_inches="tight", facecolor="white", transparent=False
+        )
         plt.close(fig)
         logger.info(f"Static visualization saved: {out_path}")
         return out_path
@@ -423,24 +485,38 @@ class BrainVisualizer:
         frame_paths: List[Path] = []
 
         for t in range(n_frames):
-            fig, axes = plt.subplots(1, 2, figsize=(14, 4),
-                                     subplot_kw={"projection": "3d"})
+            fig, axes = plt.subplots(1, 2, figsize=(14, 4), subplot_kw={"projection": "3d"})
             fig.suptitle(f"{title}  [t = {t}s]", fontsize=11)
 
-            for ax, (mesh, data, hemi, label) in zip(axes, [
-                (fsaverage.infl_left,  preds[t, :half],        "left",  "Left"),
-                (fsaverage.infl_right, preds[t, half:half * 2], "right", "Right"),
-            ]):
+            for ax, (mesh, data, hemi, label) in zip(
+                axes,
+                [
+                    (fsaverage.infl_left, preds[t, :half], "left", "Left"),
+                    (fsaverage.infl_right, preds[t, half : half * 2], "right", "Right"),
+                ],
+            ):
                 try:
                     plotting.plot_surf_stat_map(
-                        mesh, data, hemi=hemi, view="lateral",
-                        cmap=cmap, vmax=vmax, colorbar=False,
-                        bg_on_data=True, axes=ax,
+                        mesh,
+                        data,
+                        hemi=hemi,
+                        view="lateral",
+                        cmap=cmap,
+                        vmax=vmax,
+                        colorbar=False,
+                        bg_on_data=True,
+                        axes=ax,
                     )
                 except TypeError:
                     plotting.plot_surf_stat_map(
-                        mesh, data, hemi=hemi, view="lateral",
-                        cmap=cmap, vmax=vmax, colorbar=False, bg_on_data=True,
+                        mesh,
+                        data,
+                        hemi=hemi,
+                        view="lateral",
+                        cmap=cmap,
+                        vmax=vmax,
+                        colorbar=False,
+                        bg_on_data=True,
                     )
                 ax.set_title(label, fontsize=9)
 
@@ -500,6 +576,7 @@ class BrainVisualizer:
         # ── Try TRIBEv2 native plotter ───────────────────────────────────
         try:
             from tribev2.plotting import PlotBrain
+
             plotter = PlotBrain(mesh="fsaverage5")
             plotter.plot_timesteps_mp4(
                 preds,
@@ -524,21 +601,29 @@ class BrainVisualizer:
         half = min(_N_VERTS_PER_HEMI, preds.shape[1] // 2)
         vmax = float(np.percentile(preds, 98))
 
-        fig, axes = plt.subplots(1, 2, figsize=(14, 4),
-                                 subplot_kw={"projection": "3d"})
+        fig, axes = plt.subplots(1, 2, figsize=(14, 4), subplot_kw={"projection": "3d"})
 
         def _render_frame(t: int):
             for ax in axes:
                 ax.clear()
-            for ax, (mesh, data, hemi, lbl) in zip(axes, [
-                (fsaverage.infl_left,  preds[t, :half],         "left",  "LH"),
-                (fsaverage.infl_right, preds[t, half:half * 2], "right", "RH"),
-            ]):
+            for ax, (mesh, data, hemi, lbl) in zip(
+                axes,
+                [
+                    (fsaverage.infl_left, preds[t, :half], "left", "LH"),
+                    (fsaverage.infl_right, preds[t, half : half * 2], "right", "RH"),
+                ],
+            ):
                 try:
                     plotting.plot_surf_stat_map(
-                        mesh, data, hemi=hemi, view="lateral",
-                        cmap="hot", vmax=vmax, colorbar=False,
-                        bg_on_data=True, axes=ax,
+                        mesh,
+                        data,
+                        hemi=hemi,
+                        view="lateral",
+                        cmap="hot",
+                        vmax=vmax,
+                        colorbar=False,
+                        bg_on_data=True,
+                        axes=ax,
                     )
                 except TypeError:
                     pass
@@ -546,7 +631,10 @@ class BrainVisualizer:
             fig.suptitle(title, fontsize=11)
 
         anim = animation.FuncAnimation(
-            fig, _render_frame, frames=n_frames, interval=int(1000 / fps),
+            fig,
+            _render_frame,
+            frames=n_frames,
+            interval=int(1000 / fps),
         )
         anim.save(str(out_path), writer="ffmpeg", fps=fps, dpi=100)
         plt.close(fig)
@@ -581,8 +669,8 @@ class BrainVisualizer:
             raise ImportError("matplotlib required: pip install matplotlib")
 
         regions = list(roi_activations.keys())
-        values  = [float(roi_activations[r]) for r in regions]
-        cmap    = plt.cm.hot
+        values = [float(roi_activations[r]) for r in regions]
+        cmap = plt.cm.hot
         colours = cmap(np.clip(values, 0, 1))
 
         fig, ax = plt.subplots(figsize=(10, max(4, len(regions) * 0.55)))
@@ -596,15 +684,20 @@ class BrainVisualizer:
         # Value labels inside bars
         for bar, val in zip(bars, values):
             x_pos = val + 0.02 if val < 0.9 else val - 0.06
-            ax.text(x_pos, bar.get_y() + bar.get_height() / 2,
-                    f"{val:.3f}", va="center", ha="left",
-                    fontsize=9, color="black" if val < 0.9 else "white")
+            ax.text(
+                x_pos,
+                bar.get_y() + bar.get_height() / 2,
+                f"{val:.3f}",
+                va="center",
+                ha="left",
+                fontsize=9,
+                color="black" if val < 0.9 else "white",
+            )
 
         # Activation-level legend lines
         for lvl, lbl, col in [(0.25, "threshold", "steelblue"), (0.4, "excitatory", "tomato")]:
             ax.axvline(lvl, color=col, linestyle="--", linewidth=1, alpha=0.6)
-            ax.text(lvl + 0.01, len(regions) - 0.4, lbl,
-                    fontsize=8, color=col, alpha=0.8)
+            ax.text(lvl + 0.01, len(regions) - 0.4, lbl, fontsize=8, color=col, alpha=0.8)
 
         plt.tight_layout()
         out_name = output_name or self._ts("roi_heatmap")
@@ -643,6 +736,7 @@ class BrainVisualizer:
 
         try:
             from tribev2.plotting import PlotBrain
+
             plotter = PlotBrain(mesh="fsaverage5")
             if preds.ndim == 2:
                 data = preds[timestep]
@@ -657,22 +751,24 @@ class BrainVisualizer:
 
             mesh_l = pv.PolyData(
                 _MeshCache._coords_lh,
-                np.hstack([np.full((len(_MeshCache._faces_lh), 1), 3),
-                           _MeshCache._faces_lh]).astype(np.int64),
+                np.hstack(
+                    [np.full((len(_MeshCache._faces_lh), 1), 3), _MeshCache._faces_lh]
+                ).astype(np.int64),
             )
             mesh_r = pv.PolyData(
                 _MeshCache._coords_rh,
-                np.hstack([np.full((len(_MeshCache._faces_rh), 1), 3),
-                           _MeshCache._faces_rh]).astype(np.int64),
+                np.hstack(
+                    [np.full((len(_MeshCache._faces_rh), 1), 3), _MeshCache._faces_rh]
+                ).astype(np.int64),
             )
             mesh_l["activation"] = data_1d[:half]
-            mesh_r["activation"] = data_1d[half: half * 2]
+            mesh_r["activation"] = data_1d[half : half * 2]
 
             pl = pv.Plotter(title=title)
-            pl.add_mesh(mesh_l, scalars="activation", cmap="hot",
-                        show_scalar_bar=False)
-            pl.add_mesh(mesh_r, scalars="activation", cmap="hot",
-                        scalar_bar_args={"title": "Activation"})
+            pl.add_mesh(mesh_l, scalars="activation", cmap="hot", show_scalar_bar=False)
+            pl.add_mesh(
+                mesh_r, scalars="activation", cmap="hot", scalar_bar_args={"title": "Activation"}
+            )
             pl.add_text(title, font_size=12)
             pl.show()
 
@@ -712,7 +808,8 @@ class BrainVisualizer:
             try:
                 if vtype == "interactive":
                     p = self.plot_interactive(
-                        preds, title=title,
+                        preds,
+                        title=title,
                         output_name=f"{stem}_interactive",
                         auto_open=auto_open_interactive,
                     )
@@ -720,7 +817,9 @@ class BrainVisualizer:
 
                 elif vtype == "static":
                     p = self.plot_static(
-                        preds, title=title, output_name=f"{stem}_static",
+                        preds,
+                        title=title,
+                        output_name=f"{stem}_static",
                     )
                     results["static"] = str(p)
 
@@ -740,8 +839,10 @@ class BrainVisualizer:
 
                 elif vtype == "heatmap":
                     p = self.plot_roi_heatmap(
-                        roi_activations, title=title,
-                        output_name=f"{stem}_heatmap", modality=modality,
+                        roi_activations,
+                        title=title,
+                        output_name=f"{stem}_heatmap",
+                        modality=modality,
                     )
                     results["heatmap"] = str(p)
 

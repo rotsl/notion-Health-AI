@@ -24,10 +24,13 @@ class TestAIInsightsEngine:
     @pytest.fixture
     def engine(self):
         """Create an AI insights engine for testing."""
-        with patch.dict("os.environ", {
-            "ANTHROPIC_API_KEY": "test_key",
-            "OPENAI_API_KEY": "test_key",
-        }):
+        with patch.dict(
+            "os.environ",
+            {
+                "ANTHROPIC_API_KEY": "test_key",
+                "OPENAI_API_KEY": "test_key",
+            },
+        ):
             return AIInsightsEngine()
 
     def test_initialization(self, engine):
@@ -40,22 +43,20 @@ class TestAIInsightsEngine:
     async def test_generate_health_insights(self, engine, mock_health_metrics, mock_health_summary):
         """Test generating health insights."""
         insights = await engine.generate_health_insights(
-            mock_health_metrics,
-            mock_health_summary,
-            category="overall"
+            mock_health_metrics, mock_health_summary, category="overall"
         )
 
         # Should return a list of insights
         assert isinstance(insights, list)
 
     @pytest.mark.asyncio
-    async def test_generate_category_specific_insights(self, engine, mock_health_metrics, mock_health_summary):
+    async def test_generate_category_specific_insights(
+        self, engine, mock_health_metrics, mock_health_summary
+    ):
         """Test generating category-specific insights."""
         for category in ["weight", "sleep", "exercise", "mood"]:
             insights = await engine.generate_health_insights(
-                mock_health_metrics,
-                mock_health_summary,
-                category=category
+                mock_health_metrics, mock_health_summary, category=category
             )
             assert isinstance(insights, list)
 
@@ -73,9 +74,9 @@ class TestTribeModelWrapper:
     async def test_simulate_prediction(self):
         """Test simulated prediction."""
         wrapper = TribeModelWrapper(device="cpu")
-        
+
         prediction = wrapper._simulate_prediction("exercise")
-        
+
         assert "prefrontal_cortex" in prediction
         assert "motor_cortex" in prediction
         assert prediction["motor_cortex"]["activation"] > 0.5
@@ -84,9 +85,9 @@ class TestTribeModelWrapper:
     async def test_simulate_prediction_meditation(self):
         """Test simulated prediction for meditation."""
         wrapper = TribeModelWrapper(device="cpu")
-        
+
         prediction = wrapper._simulate_prediction("meditation")
-        
+
         assert prediction["amygdala"]["type"] == "inhibitory"
         assert prediction["prefrontal_cortex"]["activation"] > 0.7
 
@@ -94,9 +95,9 @@ class TestTribeModelWrapper:
     async def test_predict_response(self):
         """Test predict_response method."""
         wrapper = TribeModelWrapper(device="cpu")
-        
+
         result = await wrapper.predict_response(text_stimulus="running exercise")
-        
+
         assert isinstance(result, dict)
         assert len(result) > 0
 
@@ -152,11 +153,12 @@ class TestTribeHealthAnalyzer:
         assert "error" in result
 
     @pytest.mark.asyncio
-    async def test_analyze_brain_health_correlation(self, analyzer, mock_health_metrics, mock_health_summary):
+    async def test_analyze_brain_health_correlation(
+        self, analyzer, mock_health_metrics, mock_health_summary
+    ):
         """Test brain-health correlation analysis."""
         result = await analyzer.analyze_brain_health_correlation(
-            mock_health_metrics,
-            mock_health_summary
+            mock_health_metrics, mock_health_summary
         )
 
         assert result["success"] is True
@@ -177,8 +179,7 @@ class TestTribeHealthAnalyzer:
 
         # Check that sleep is prioritized
         sleep_slot = next(
-            (s for s in result["schedule"]["slots"] if "Sleep" in s["activity"]),
-            None
+            (s for s in result["schedule"]["slots"] if "Sleep" in s["activity"]), None
         )
         assert sleep_slot is not None
         assert sleep_slot["priority"] in ("Critical", "High")
@@ -194,7 +195,7 @@ class TestBrainResponseModel:
             activation_level=0.85,
             response_type="excitatory",
             confidence=0.90,
-            description="Executive function region"
+            description="Executive function region",
         )
 
         assert response.region == BrainRegion.PREFRONTAL_CORTEX
@@ -207,7 +208,7 @@ class TestBrainResponseModel:
             region=BrainRegion.HIPPOCAMPUS,
             activation_level=0.75,
             response_type="excitatory",
-            confidence=0.85
+            confidence=0.85,
         )
 
         data = response.to_dict()
@@ -226,14 +227,14 @@ class TestBrainResponseModel:
                     region=BrainRegion.MOTOR_CORTEX,
                     activation_level=0.85,
                     response_type="excitatory",
-                    confidence=0.85
+                    confidence=0.85,
                 )
             ],
             overall_wellness_score=8.0,
             benefits=["Improved mood", "Better sleep"],
             recommendations=["Stay hydrated"],
             optimal_timing="Morning",
-            intensity_level="moderate"
+            intensity_level="moderate",
         )
 
         assert prediction.activity == ActivityType.EXERCISE
@@ -247,7 +248,7 @@ class TestBrainResponseModel:
             brain_region=BrainRegion.HIPPOCAMPUS,
             correlation_strength=0.75,
             insight="Quality sleep enhances memory",
-            confidence=0.85
+            confidence=0.85,
         )
 
         assert correlation.health_metric == "Sleep Hours"
@@ -260,9 +261,18 @@ class TestActivityTypes:
     def test_all_activity_types_exist(self):
         """Test that all expected activity types are defined."""
         expected_types = [
-            "exercise", "meditation", "sleep", "reading",
-            "music", "social", "work", "relaxation",
-            "nature", "learning", "creative", "mindfulness"
+            "exercise",
+            "meditation",
+            "sleep",
+            "reading",
+            "music",
+            "social",
+            "work",
+            "relaxation",
+            "nature",
+            "learning",
+            "creative",
+            "mindfulness",
         ]
 
         for activity in expected_types:
@@ -281,11 +291,21 @@ class TestBrainRegions:
     def test_all_brain_regions_exist(self):
         """Test that all expected brain regions are defined."""
         expected_regions = [
-            "visual_cortex", "auditory_cortex", "prefrontal_cortex",
-            "motor_cortex", "hippocampus", "amygdala", "insula",
-            "anterior_cingulate", "posterior_cingulate", "temporal_lobe",
-            "parietal_lobe", "occipital_lobe", "cerebellum",
-            "brain_stem", "default_mode_network"
+            "visual_cortex",
+            "auditory_cortex",
+            "prefrontal_cortex",
+            "motor_cortex",
+            "hippocampus",
+            "amygdala",
+            "insula",
+            "anterior_cingulate",
+            "posterior_cingulate",
+            "temporal_lobe",
+            "parietal_lobe",
+            "occipital_lobe",
+            "cerebellum",
+            "brain_stem",
+            "default_mode_network",
         ]
 
         for region in expected_regions:

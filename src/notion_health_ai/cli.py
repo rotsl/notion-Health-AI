@@ -78,6 +78,7 @@ def main():
 # Log Commands
 # ===========================================
 
+
 @main.group()
 def log():
     """Log health data entries."""
@@ -122,18 +123,20 @@ def metric(**kwargs):
         kwargs["notes"] = text("Notes (optional):").ask() or None
 
     # Log the metric
-    result = asyncio.run(manager.log_health_metric(
-        weight=kwargs.get("weight"),
-        sleep_hours=kwargs.get("sleep"),
-        sleep_quality=kwargs.get("sleep_quality"),
-        exercise_minutes=kwargs.get("exercise"),
-        exercise_type=kwargs.get("exercise_type"),
-        steps=kwargs.get("steps"),
-        mood=kwargs.get("mood"),
-        energy=kwargs.get("energy"),
-        water_glasses=kwargs.get("water"),
-        notes=kwargs.get("notes"),
-    ))
+    result = asyncio.run(
+        manager.log_health_metric(
+            weight=kwargs.get("weight"),
+            sleep_hours=kwargs.get("sleep"),
+            sleep_quality=kwargs.get("sleep_quality"),
+            exercise_minutes=kwargs.get("exercise"),
+            exercise_type=kwargs.get("exercise_type"),
+            steps=kwargs.get("steps"),
+            mood=kwargs.get("mood"),
+            energy=kwargs.get("energy"),
+            water_glasses=kwargs.get("water"),
+            notes=kwargs.get("notes"),
+        )
+    )
 
     if result.success:
         console.print(f"✅ {result.message}", style="green")
@@ -146,7 +149,12 @@ def metric(**kwargs):
 @log.command()
 @click.option("--name", required=True, help="Medication name")
 @click.option("--dosage", required=True, help="Dosage (e.g., '100mg')")
-@click.option("--frequency", type=click.Choice(["once_daily", "twice_daily", "three_times_daily", "weekly", "as_needed"]), required=True, help="How often to take")
+@click.option(
+    "--frequency",
+    type=click.Choice(["once_daily", "twice_daily", "three_times_daily", "weekly", "as_needed"]),
+    required=True,
+    help="How often to take",
+)
 @click.option("--start-date", type=str, default="today", help="Start date (YYYY-MM-DD or 'today')")
 @click.option("--doctor", help="Prescribing doctor")
 @click.option("--purpose", help="What it's for")
@@ -156,14 +164,16 @@ def medication(**kwargs):
 
     start_date = parse_date(kwargs["start_date"]) or date.today()
 
-    result = asyncio.run(manager.add_medication(
-        name=kwargs["name"],
-        dosage=kwargs["dosage"],
-        frequency=kwargs["frequency"],
-        start_date=start_date,
-        prescribing_doctor=kwargs.get("doctor"),
-        purpose=kwargs.get("purpose"),
-    ))
+    result = asyncio.run(
+        manager.add_medication(
+            name=kwargs["name"],
+            dosage=kwargs["dosage"],
+            frequency=kwargs["frequency"],
+            start_date=start_date,
+            prescribing_doctor=kwargs.get("doctor"),
+            purpose=kwargs.get("purpose"),
+        )
+    )
 
     if result.success:
         console.print(f"✅ {result.message}", style="green")
@@ -181,13 +191,15 @@ def symptom(**kwargs):
     """Log a symptom entry."""
     manager = get_health_manager()
 
-    result = asyncio.run(manager.log_symptom(
-        symptom_name=kwargs["symptom"],
-        severity=kwargs["severity"],
-        body_part=kwargs.get("body_part"),
-        duration_minutes=kwargs.get("duration"),
-        notes=kwargs.get("notes"),
-    ))
+    result = asyncio.run(
+        manager.log_symptom(
+            symptom_name=kwargs["symptom"],
+            severity=kwargs["severity"],
+            body_part=kwargs.get("body_part"),
+            duration_minutes=kwargs.get("duration"),
+            notes=kwargs.get("notes"),
+        )
+    )
 
     if result.success:
         console.print(f"✅ {result.message}", style="green")
@@ -198,6 +210,7 @@ def symptom(**kwargs):
 # ===========================================
 # View Commands
 # ===========================================
+
 
 @main.group()
 def view():
@@ -234,10 +247,16 @@ def summary(days: int):
         table.add_row("Exercise", f"{summary_data.total_exercise_minutes} min", "")
 
     if summary_data.avg_mood:
-        table.add_row("Mood", f"{summary_data.avg_mood:.1f}/10", get_mood_emoji(int(summary_data.avg_mood)))
+        table.add_row(
+            "Mood", f"{summary_data.avg_mood:.1f}/10", get_mood_emoji(int(summary_data.avg_mood))
+        )
 
     if summary_data.avg_energy:
-        table.add_row("Energy", f"{summary_data.avg_energy:.1f}/10", get_energy_emoji(int(summary_data.avg_energy)))
+        table.add_row(
+            "Energy",
+            f"{summary_data.avg_energy:.1f}/10",
+            get_energy_emoji(int(summary_data.avg_energy)),
+        )
 
     console.print(table)
 
@@ -326,6 +345,7 @@ def goals():
 # Add Commands
 # ===========================================
 
+
 @main.group()
 def add():
     """Add new entries."""
@@ -336,7 +356,24 @@ def add():
 @click.option("--date", required=True, help="Appointment date (YYYY-MM-DD)")
 @click.option("--time", required=True, help="Appointment time (HH:MM)")
 @click.option("--doctor", required=True, help="Doctor name")
-@click.option("--type", "appointment_type", type=click.Choice(["checkup", "follow_up", "specialist", "dental", "vision", "mental_health", "lab_work", "other"]), required=True, help="Type of appointment")
+@click.option(
+    "--type",
+    "appointment_type",
+    type=click.Choice(
+        [
+            "checkup",
+            "follow_up",
+            "specialist",
+            "dental",
+            "vision",
+            "mental_health",
+            "lab_work",
+            "other",
+        ]
+    ),
+    required=True,
+    help="Type of appointment",
+)
 @click.option("--facility", help="Facility name")
 @click.option("--reason", help="Reason for visit")
 def appointment(**kwargs):
@@ -348,14 +385,16 @@ def appointment(**kwargs):
         console.print("❌ Invalid date format. Use YYYY-MM-DD.", style="red")
         return
 
-    result = asyncio.run(manager.add_appointment(
-        appointment_date=appointment_date,
-        appointment_time=kwargs["time"],
-        doctor_name=kwargs["doctor"],
-        appointment_type=kwargs["appointment_type"],
-        facility=kwargs.get("facility"),
-        reason=kwargs.get("reason"),
-    ))
+    result = asyncio.run(
+        manager.add_appointment(
+            appointment_date=appointment_date,
+            appointment_time=kwargs["time"],
+            doctor_name=kwargs["doctor"],
+            appointment_type=kwargs["appointment_type"],
+            facility=kwargs.get("facility"),
+            reason=kwargs.get("reason"),
+        )
+    )
 
     if result.success:
         console.print(f"✅ {result.message}", style="green")
@@ -364,7 +403,15 @@ def appointment(**kwargs):
 
 
 @add.command()
-@click.option("--type", "goal_type", type=click.Choice(["weight", "exercise", "sleep", "steps", "water_intake", "meditation", "custom"]), required=True, help="Type of goal")
+@click.option(
+    "--type",
+    "goal_type",
+    type=click.Choice(
+        ["weight", "exercise", "sleep", "steps", "water_intake", "meditation", "custom"]
+    ),
+    required=True,
+    help="Type of goal",
+)
 @click.option("--title", required=True, help="Goal title")
 @click.option("--target", type=float, required=True, help="Target value")
 @click.option("--unit", required=True, help="Unit of measurement")
@@ -379,14 +426,16 @@ def goal(**kwargs):
         console.print("❌ Invalid date format. Use YYYY-MM-DD.", style="red")
         return
 
-    result = asyncio.run(manager.set_health_goal(
-        goal_type=kwargs["goal_type"],
-        title=kwargs["title"],
-        target_value=kwargs["target"],
-        unit=kwargs["unit"],
-        target_date=target_date,
-        description=kwargs.get("description"),
-    ))
+    result = asyncio.run(
+        manager.set_health_goal(
+            goal_type=kwargs["goal_type"],
+            title=kwargs["title"],
+            target_value=kwargs["target"],
+            unit=kwargs["unit"],
+            target_date=target_date,
+            description=kwargs.get("description"),
+        )
+    )
 
     if result.success:
         console.print(f"✅ {result.message}", style="green")
@@ -398,9 +447,17 @@ def goal(**kwargs):
 # Insights Command
 # ===========================================
 
+
 @main.command()
-@click.option("--category", type=click.Choice(["weight", "sleep", "exercise", "mood", "overall", "brain"]), default="overall", help="Category to analyze")
-@click.option("--period", type=click.Choice(["week", "month", "all"]), default="week", help="Time period")
+@click.option(
+    "--category",
+    type=click.Choice(["weight", "sleep", "exercise", "mood", "overall", "brain"]),
+    default="overall",
+    help="Category to analyze",
+)
+@click.option(
+    "--period", type=click.Choice(["week", "month", "all"]), default="week", help="Time period"
+)
 def insights(category: str, period: str):
     """Get AI-powered health insights with Tribe v2 brain prediction."""
     manager = get_health_manager()
@@ -435,13 +492,16 @@ def insights(category: str, period: str):
             for i, rec in enumerate(insight.recommendations, 1):
                 console.print(f"  {i}. {rec}")
 
-        console.print(f"\n[dim]Confidence: {insight.confidence_score * 100:.0f}% | Priority: {insight.priority}[/dim]")
+        console.print(
+            f"\n[dim]Confidence: {insight.confidence_score * 100:.0f}% | Priority: {insight.priority}[/dim]"
+        )
         console.print("-" * 50)
 
 
 # ===========================================
 # Tribe v2 Brain Prediction Commands
 # ===========================================
+
 
 @main.group()
 def brain():
@@ -450,14 +510,23 @@ def brain():
 
 
 @brain.command()
-@click.option("--activity", type=click.Choice(["exercise", "meditation", "sleep", "reading", "music", "social", "work", "relaxation"]), required=True, help="Activity to analyze")
+@click.option(
+    "--activity",
+    type=click.Choice(
+        ["exercise", "meditation", "sleep", "reading", "music", "social", "work", "relaxation"]
+    ),
+    required=True,
+    help="Activity to analyze",
+)
 @click.option("--duration", type=int, default=30, help="Duration in minutes")
 def predict(activity: str, duration: int):
     """Predict brain response to a wellness activity using Tribe v2."""
     analyzer = get_tribe_analyzer()
 
     console.print(Panel(f"🧠 Tribe v2 Brain Response Prediction", style="blue"))
-    console.print(f"\nAnalyzing brain response to [cyan]{activity}[/cyan] for [yellow]{duration}[/yellow] minutes...\n")
+    console.print(
+        f"\nAnalyzing brain response to [cyan]{activity}[/cyan] for [yellow]{duration}[/yellow] minutes...\n"
+    )
 
     result = asyncio.run(analyzer.predict_brain_response(activity, duration))
 
@@ -473,12 +542,14 @@ def predict(activity: str, duration: int):
             table.add_row(
                 region.replace("_", " ").title(),
                 data.get("response", "N/A"),
-                f"{data.get('intensity', 0):.1%}"
+                f"{data.get('intensity', 0):.1%}",
             )
 
         console.print(table)
 
-        console.print(f"\n[bold]Overall Wellness Score:[/bold] {prediction.get('wellness_score', 0):.1f}/10")
+        console.print(
+            f"\n[bold]Overall Wellness Score:[/bold] {prediction.get('wellness_score', 0):.1f}/10"
+        )
         console.print(f"[bold]Recommendation:[/bold] {prediction.get('recommendation', 'N/A')}")
 
         if prediction.get("benefits"):
@@ -524,7 +595,7 @@ def analyze(days: int):
                 corr.get("metric", "N/A"),
                 corr.get("brain_region", "N/A"),
                 f"{corr.get('strength', 0):.2f}",
-                corr.get("insight", "N/A")
+                corr.get("insight", "N/A"),
             )
 
         console.print(table)
@@ -568,7 +639,7 @@ def schedule():
                 slot.get("time", "N/A"),
                 slot.get("activity", "N/A"),
                 slot.get("brain_benefit", "N/A"),
-                slot.get("priority", "N/A")
+                slot.get("priority", "N/A"),
             )
 
         console.print(table)
@@ -576,21 +647,23 @@ def schedule():
         console.print(f"\n[bold]Schedule Score:[/bold] {schedule.get('score', 0):.1f}/10")
         console.print(f"[bold]Notes:[/bold] {schedule.get('notes', 'N/A')}")
     else:
-        console.print(f"❌ Schedule generation failed: {result.get('error', 'Unknown error')}", style="red")
+        console.print(
+            f"❌ Schedule generation failed: {result.get('error', 'Unknown error')}", style="red"
+        )
 
 
 _ACTIVITY_PROMPTS = {
-    "exercise":    "I went for a {d} minute run and full body workout session, feeling my heart rate rise and muscles engage throughout the effort",
-    "meditation":  "I spent {d} minutes in quiet meditation, focusing gently on my breath and letting thoughts pass without holding onto them",
-    "sleep":       "I enjoyed a deep and restful sleep lasting {d} minutes, cycling through slow wave and REM stages for full recovery",
-    "reading":     "I sat down and read a book for {d} minutes, fully absorbed in the text and following the narrative closely",
-    "music":       "I listened to music for {d} minutes, letting the melodies and rhythms wash over me while I relaxed and enjoyed the sound",
-    "social":      "I spent {d} minutes in warm and engaging conversation with close friends, laughing and sharing stories together",
-    "work":        "I worked with deep concentration on challenging tasks for {d} minutes, organising my thoughts and solving complex problems",
-    "relaxation":  "I spent {d} minutes relaxing completely, letting go of tension and allowing my body and mind to unwind fully",
-    "nature":      "I walked through a quiet park and enjoyed the natural surroundings for {d} minutes, breathing fresh air and observing the trees and sky",
-    "learning":    "I studied new and complex material for {d} minutes, taking notes and making connections between concepts to consolidate understanding",
-    "creative":    "I engaged in open-ended creative work for {d} minutes, brainstorming freely and exploring novel ideas without judgment",
+    "exercise": "I went for a {d} minute run and full body workout session, feeling my heart rate rise and muscles engage throughout the effort",
+    "meditation": "I spent {d} minutes in quiet meditation, focusing gently on my breath and letting thoughts pass without holding onto them",
+    "sleep": "I enjoyed a deep and restful sleep lasting {d} minutes, cycling through slow wave and REM stages for full recovery",
+    "reading": "I sat down and read a book for {d} minutes, fully absorbed in the text and following the narrative closely",
+    "music": "I listened to music for {d} minutes, letting the melodies and rhythms wash over me while I relaxed and enjoyed the sound",
+    "social": "I spent {d} minutes in warm and engaging conversation with close friends, laughing and sharing stories together",
+    "work": "I worked with deep concentration on challenging tasks for {d} minutes, organising my thoughts and solving complex problems",
+    "relaxation": "I spent {d} minutes relaxing completely, letting go of tension and allowing my body and mind to unwind fully",
+    "nature": "I walked through a quiet park and enjoyed the natural surroundings for {d} minutes, breathing fresh air and observing the trees and sky",
+    "learning": "I studied new and complex material for {d} minutes, taking notes and making connections between concepts to consolidate understanding",
+    "creative": "I engaged in open-ended creative work for {d} minutes, brainstorming freely and exploring novel ideas without judgment",
     "mindfulness": "I practiced gentle mindfulness and body awareness for {d} minutes, noticing physical sensations and staying present in each moment",
 }
 
@@ -599,14 +672,18 @@ _ACTIVITY_PROMPTS = {
 @click.option(
     "--activity",
     type=click.Choice(list(_ACTIVITY_PROMPTS.keys())),
-    default="exercise", show_default=True,
+    default="exercise",
+    show_default=True,
     help="Activity to predict brain response for",
 )
 @click.option("--duration", type=int, default=30, show_default=True, help="Duration in minutes")
 @click.option(
-    "--type", "viz_types", multiple=True,
+    "--type",
+    "viz_types",
+    multiple=True,
     type=click.Choice(["interactive", "static", "gif", "heatmap"]),
-    default=["interactive", "heatmap"], show_default=True,
+    default=["interactive", "heatmap"],
+    show_default=True,
     help="Visualization type(s) to generate (repeat flag for multiple)",
 )
 @click.option("--no-open", is_flag=True, help="Do not auto-open the browser after generating HTML")
@@ -683,8 +760,11 @@ def visualize(activity: str, duration: int, viz_types: tuple, no_open: bool):
 # Report Command
 # ===========================================
 
+
 @main.command()
-@click.option("--period", type=click.Choice(["week", "month", "custom"]), default="week", help="Report period")
+@click.option(
+    "--period", type=click.Choice(["week", "month", "custom"]), default="week", help="Report period"
+)
 @click.option("--start-date", help="Start date for custom period (YYYY-MM-DD)")
 @click.option("--end-date", help="End date for custom period (YYYY-MM-DD)")
 @click.option("--output", type=click.Path(), help="Output file path")
@@ -774,22 +854,25 @@ def report(period: str, start_date: Optional[str], end_date: Optional[str], outp
 # Interactive Mode
 # ===========================================
 
+
 @main.command()
 def interactive():
     """Start interactive mode."""
-    console.print(Panel(
-        "Welcome to NotionHealth AI v2.0!\n"
-        "Track your health, medications, and get AI insights\n"
-        "powered by Tribe v2 brain prediction.\n\n"
-        "Features:\n"
-        "  📊 Health metrics tracking\n"
-        "  💊 Medication management\n"
-        "  🧠 Tribe v2 brain response prediction\n"
-        "  📅 Appointment scheduling\n"
-        "  🎯 Goal tracking",
-        title="🏥 NotionHealth AI",
-        style="blue",
-    ))
+    console.print(
+        Panel(
+            "Welcome to NotionHealth AI v2.0!\n"
+            "Track your health, medications, and get AI insights\n"
+            "powered by Tribe v2 brain prediction.\n\n"
+            "Features:\n"
+            "  📊 Health metrics tracking\n"
+            "  💊 Medication management\n"
+            "  🧠 Tribe v2 brain response prediction\n"
+            "  📅 Appointment scheduling\n"
+            "  🎯 Goal tracking",
+            title="🏥 NotionHealth AI",
+            style="blue",
+        )
+    )
 
     while True:
         action = select(

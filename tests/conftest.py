@@ -65,7 +65,7 @@ def mock_health_metrics():
     """Create mock health metrics data."""
     from datetime import date
     from notion_health_ai.models import HealthMetric, MoodLevel, EnergyLevel
-    
+
     return [
         HealthMetric(
             id="metric_1",
@@ -99,7 +99,7 @@ def mock_health_summary():
     """Create a mock health summary."""
     from datetime import date
     from notion_health_ai.models import HealthSummary
-    
+
     return HealthSummary(
         period_start=date(2026, 3, 22),
         period_end=date(2026, 3, 29),
@@ -136,6 +136,7 @@ def mock_notion_client(mock_httpx_client):
     with patch("notion_health_ai.notion_client.httpx.AsyncClient") as mock_async_client:
         mock_async_client.return_value = mock_httpx_client
         from notion_health_ai.notion_client import NotionClient
+
         client = NotionClient(api_key="test_key")
         yield client
 
@@ -144,6 +145,7 @@ def mock_notion_client(mock_httpx_client):
 def health_manager():
     """Create a HealthManager instance for testing."""
     from notion_health_ai.health_manager import HealthManager
+
     return HealthManager(
         notion_api_key="test_key",
         health_database_id="test_health_db",
@@ -158,4 +160,5 @@ def health_manager():
 def tribe_analyzer():
     """Create a TribeHealthAnalyzer instance for testing."""
     from notion_health_ai.tribe_integration import TribeHealthAnalyzer
+
     return TribeHealthAnalyzer(use_model=False)

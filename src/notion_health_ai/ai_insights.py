@@ -49,6 +49,7 @@ class AIInsightsEngine:
         if self.model_provider == "anthropic":
             try:
                 import anthropic
+
                 self.client = anthropic.Anthropic(api_key=self.anthropic_api_key)
             except ImportError:
                 logger.warning("Anthropic package not installed, using mock mode")
@@ -56,6 +57,7 @@ class AIInsightsEngine:
         elif self.model_provider == "openai":
             try:
                 import openai
+
                 self.client = openai.OpenAI(api_key=self.openai_api_key)
             except ImportError:
                 logger.warning("OpenAI package not installed, using mock mode")
@@ -63,6 +65,7 @@ class AIInsightsEngine:
         elif self.model_provider == "gemini":
             try:
                 import google.generativeai as genai
+
                 genai.configure(api_key=self.gemini_api_key)
                 self.client = genai.GenerativeModel(self.model_name or "gemini-2.0-flash")
             except ImportError:
@@ -354,16 +357,18 @@ Provide a comprehensive health assessment with:
 
     def _generate_mock_response(self) -> str:
         """Generate mock AI response."""
-        return json.dumps({
-            "title": "Health Analysis",
-            "summary": "Your health data shows positive trends.",
-            "details": "Based on the available data, you're maintaining good health practices.",
-            "recommendations": [
-                "Continue current healthy habits",
-                "Stay consistent with tracking",
-                "Focus on areas needing improvement",
-            ],
-        })
+        return json.dumps(
+            {
+                "title": "Health Analysis",
+                "summary": "Your health data shows positive trends.",
+                "details": "Based on the available data, you're maintaining good health practices.",
+                "recommendations": [
+                    "Continue current healthy habits",
+                    "Stay consistent with tracking",
+                    "Focus on areas needing improvement",
+                ],
+            }
+        )
 
     def _parse_insight_response(
         self,
@@ -493,52 +498,56 @@ Provide a comprehensive health assessment with:
         insights = []
 
         # Analyze sleep-mood correlation
-        sleep_mood_data = [(m.sleep_hours, m.mood.value) for m in metrics 
-                          if m.sleep_hours and m.mood]
+        sleep_mood_data = [
+            (m.sleep_hours, m.mood.value) for m in metrics if m.sleep_hours and m.mood
+        ]
         if len(sleep_mood_data) >= 5:
             correlation = self._calculate_correlation(
-                [d[0] for d in sleep_mood_data],
-                [d[1] for d in sleep_mood_data]
+                [d[0] for d in sleep_mood_data], [d[1] for d in sleep_mood_data]
             )
             if abs(correlation) > 0.3:
-                insights.append(AIInsight(
-                    category="correlation",
-                    title="Sleep-Mood Connection",
-                    summary=f"Found a {'positive' if correlation > 0 else 'negative'} correlation ({correlation:.2f}) between sleep and mood.",
-                    details="Your mood tends to be better when you get more sleep. This is consistent with research showing sleep quality significantly impacts emotional well-being.",
-                    recommendations=[
-                        "Prioritize sleep on nights before important days",
-                        "Track your mood after different sleep durations",
-                    ],
-                    data_points_used=len(sleep_mood_data),
-                    confidence_score=0.7,
-                    priority=2,
-                    tags=["sleep", "mood", "correlation"],
-                ))
+                insights.append(
+                    AIInsight(
+                        category="correlation",
+                        title="Sleep-Mood Connection",
+                        summary=f"Found a {'positive' if correlation > 0 else 'negative'} correlation ({correlation:.2f}) between sleep and mood.",
+                        details="Your mood tends to be better when you get more sleep. This is consistent with research showing sleep quality significantly impacts emotional well-being.",
+                        recommendations=[
+                            "Prioritize sleep on nights before important days",
+                            "Track your mood after different sleep durations",
+                        ],
+                        data_points_used=len(sleep_mood_data),
+                        confidence_score=0.7,
+                        priority=2,
+                        tags=["sleep", "mood", "correlation"],
+                    )
+                )
 
         # Analyze exercise-energy correlation
-        exercise_energy_data = [(m.exercise_minutes, m.energy.value) for m in metrics 
-                               if m.exercise_minutes and m.energy]
+        exercise_energy_data = [
+            (m.exercise_minutes, m.energy.value) for m in metrics if m.exercise_minutes and m.energy
+        ]
         if len(exercise_energy_data) >= 5:
             correlation = self._calculate_correlation(
-                [d[0] for d in exercise_energy_data],
-                [d[1] for d in exercise_energy_data]
+                [d[0] for d in exercise_energy_data], [d[1] for d in exercise_energy_data]
             )
             if abs(correlation) > 0.3:
-                insights.append(AIInsight(
-                    category="correlation",
-                    title="Exercise-Energy Connection",
-                    summary=f"Found a {'positive' if correlation > 0 else 'negative'} correlation ({correlation:.2f}) between exercise and energy.",
-                    details="Your energy levels are connected to your exercise patterns. Regular physical activity can boost energy levels throughout the day.",
-                    recommendations=[
-                        "Try morning exercise for sustained energy",
-                        "Light exercise can help when feeling low energy",
-                    ],
-                    data_points_used=len(exercise_energy_data),
-                    confidence_score=0.7,
-                    priority=2,
-                    tags=["exercise", "energy", "correlation"],
-                ))
+                insights.append(
+                    AIInsight(
+                        category="correlation",
+                        title="Exercise-Energy Connection",
+                        summary=f"Found a {'positive' if correlation > 0 else 'negative'} correlation ({correlation:.2f}) between exercise and energy.",
+                        details="Your energy levels are connected to your exercise patterns. Regular physical activity can boost energy levels throughout the day.",
+                        recommendations=[
+                            "Try morning exercise for sustained energy",
+                            "Light exercise can help when feeling low energy",
+                        ],
+                        data_points_used=len(exercise_energy_data),
+                        confidence_score=0.7,
+                        priority=2,
+                        tags=["exercise", "energy", "correlation"],
+                    )
+                )
 
         return insights
 
@@ -622,11 +631,13 @@ Provide a comprehensive health assessment with:
         for i in range(days_ahead):
             future_x = n + i
             predicted = slope * future_x + intercept
-            future_values.append({
-                "day": i + 1,
-                "date": (date.today() + timedelta(days=i + 1)).isoformat(),
-                "predicted_value": round(predicted, 2),
-            })
+            future_values.append(
+                {
+                    "day": i + 1,
+                    "date": (date.today() + timedelta(days=i + 1)).isoformat(),
+                    "predicted_value": round(predicted, 2),
+                }
+            )
 
         return {
             "success": True,

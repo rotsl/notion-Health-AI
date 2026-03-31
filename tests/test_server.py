@@ -17,14 +17,17 @@ class TestNotionHealthMCPServer:
     @pytest.fixture
     def server(self):
         """Create a server instance for testing."""
-        with patch.dict("os.environ", {
-            "NOTION_API_KEY": "test_key",
-            "NOTION_HEALTH_DATABASE_ID": "test_health_db",
-            "NOTION_MEDICATION_DATABASE_ID": "test_med_db",
-            "NOTION_APPOINTMENT_DATABASE_ID": "test_appt_db",
-            "NOTION_GOALS_DATABASE_ID": "test_goals_db",
-            "NOTION_SYMPTOMS_DATABASE_ID": "test_symptoms_db",
-        }):
+        with patch.dict(
+            "os.environ",
+            {
+                "NOTION_API_KEY": "test_key",
+                "NOTION_HEALTH_DATABASE_ID": "test_health_db",
+                "NOTION_MEDICATION_DATABASE_ID": "test_med_db",
+                "NOTION_APPOINTMENT_DATABASE_ID": "test_appt_db",
+                "NOTION_GOALS_DATABASE_ID": "test_goals_db",
+                "NOTION_SYMPTOMS_DATABASE_ID": "test_symptoms_db",
+            },
+        ):
             return NotionHealthMCPServer()
 
     def test_server_initialization(self, server):
@@ -164,9 +167,9 @@ class TestNotionHealthMCPServer:
     def test_list_tools(self, server):
         """Test that tools are properly listed."""
         tools = server.list_tools()
-        
+
         tool_names = [t.name for t in tools]
-        
+
         assert "log_health_metric" in tool_names
         assert "add_medication" in tool_names
         assert "add_appointment" in tool_names

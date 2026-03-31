@@ -26,6 +26,7 @@ try:
         Prompt,
         PromptArgument,
     )
+
     MCP_AVAILABLE = True
 except ImportError:
     MCP_AVAILABLE = False
@@ -65,7 +66,9 @@ class NotionHealthMCPServer:
             self.server = Server(self.server_name)
             self._setup_handlers()
 
-        logger.info(f"NotionHealth MCP Server initialized: {self.server_name} v{self.server_version}")
+        logger.info(
+            f"NotionHealth MCP Server initialized: {self.server_name} v{self.server_version}"
+        )
 
     def _setup_handlers(self):
         """Setup MCP server handlers."""
@@ -103,7 +106,17 @@ class NotionHealthMCPServer:
                             },
                             "exercise_type": {
                                 "type": "string",
-                                "enum": ["running", "walking", "cycling", "swimming", "strength_training", "yoga", "hiit", "cardio", "other"],
+                                "enum": [
+                                    "running",
+                                    "walking",
+                                    "cycling",
+                                    "swimming",
+                                    "strength_training",
+                                    "yoga",
+                                    "hiit",
+                                    "cardio",
+                                    "other",
+                                ],
                                 "description": "Type of exercise",
                             },
                             "exercise_minutes": {
@@ -187,7 +200,13 @@ class NotionHealthMCPServer:
                             },
                             "frequency": {
                                 "type": "string",
-                                "enum": ["once_daily", "twice_daily", "three_times_daily", "weekly", "as_needed"],
+                                "enum": [
+                                    "once_daily",
+                                    "twice_daily",
+                                    "three_times_daily",
+                                    "weekly",
+                                    "as_needed",
+                                ],
                                 "description": "How often to take",
                             },
                             "start_date": {
@@ -248,7 +267,16 @@ class NotionHealthMCPServer:
                             },
                             "appointment_type": {
                                 "type": "string",
-                                "enum": ["checkup", "follow_up", "specialist", "dental", "vision", "mental_health", "lab_work", "other"],
+                                "enum": [
+                                    "checkup",
+                                    "follow_up",
+                                    "specialist",
+                                    "dental",
+                                    "vision",
+                                    "mental_health",
+                                    "lab_work",
+                                    "other",
+                                ],
                                 "description": "Type of appointment",
                             },
                             "facility": {
@@ -288,7 +316,15 @@ class NotionHealthMCPServer:
                         "properties": {
                             "goal_type": {
                                 "type": "string",
-                                "enum": ["weight", "exercise", "sleep", "steps", "water_intake", "meditation", "custom"],
+                                "enum": [
+                                    "weight",
+                                    "exercise",
+                                    "sleep",
+                                    "steps",
+                                    "water_intake",
+                                    "meditation",
+                                    "custom",
+                                ],
                                 "description": "Type of goal",
                             },
                             "title": {
@@ -436,7 +472,20 @@ class NotionHealthMCPServer:
                         "properties": {
                             "activity": {
                                 "type": "string",
-                                "enum": ["exercise", "meditation", "sleep", "reading", "music", "social", "work", "relaxation", "nature", "learning", "creative", "mindfulness"],
+                                "enum": [
+                                    "exercise",
+                                    "meditation",
+                                    "sleep",
+                                    "reading",
+                                    "music",
+                                    "social",
+                                    "work",
+                                    "relaxation",
+                                    "nature",
+                                    "learning",
+                                    "creative",
+                                    "mindfulness",
+                                ],
                                 "description": "Activity to analyze",
                             },
                             "duration_minutes": {
@@ -503,8 +552,10 @@ class NotionHealthMCPServer:
                             },
                             "viz_types": {
                                 "type": "array",
-                                "items": {"type": "string",
-                                          "enum": ["interactive", "static", "gif", "mp4", "heatmap"]},
+                                "items": {
+                                    "type": "string",
+                                    "enum": ["interactive", "static", "gif", "mp4", "heatmap"],
+                                },
                                 "description": "Visualizations to generate (default: [interactive, heatmap])",
                             },
                         },
@@ -528,8 +579,10 @@ class NotionHealthMCPServer:
                             },
                             "viz_types": {
                                 "type": "array",
-                                "items": {"type": "string",
-                                          "enum": ["interactive", "static", "gif", "mp4", "heatmap"]},
+                                "items": {
+                                    "type": "string",
+                                    "enum": ["interactive", "static", "gif", "mp4", "heatmap"],
+                                },
                                 "description": "Visualizations to generate (default: [interactive, heatmap])",
                             },
                         },
@@ -561,8 +614,10 @@ class NotionHealthMCPServer:
                             },
                             "viz_types": {
                                 "type": "array",
-                                "items": {"type": "string",
-                                          "enum": ["interactive", "static", "gif", "mp4", "heatmap"]},
+                                "items": {
+                                    "type": "string",
+                                    "enum": ["interactive", "static", "gif", "mp4", "heatmap"],
+                                },
                                 "description": "Visualizations to generate (default: [interactive, heatmap])",
                             },
                         },
@@ -623,10 +678,17 @@ class NotionHealthMCPServer:
                 return [TextContent(type="text", text=json.dumps(result, default=str))]
             except Exception as e:
                 logger.error(f"Tool call error: {e}")
-                return [TextContent(type="text", text=json.dumps({
-                    "success": False,
-                    "error": str(e),
-                }))]
+                return [
+                    TextContent(
+                        type="text",
+                        text=json.dumps(
+                            {
+                                "success": False,
+                                "error": str(e),
+                            }
+                        ),
+                    )
+                ]
 
     async def _handle_tool_call(self, name: str, arguments: Dict[str, Any]) -> Dict:
         """
@@ -812,19 +874,19 @@ class NotionHealthMCPServer:
         elif name == "predict_brain_response":
             activity = arguments.get("activity")
             duration = arguments.get("duration_minutes", 30)
-            
+
             result = await self.tribe_analyzer.predict_brain_response(activity, duration)
             return result
 
         elif name == "analyze_brain_health_correlation":
             days = arguments.get("days", 7)
-            
+
             end_date = date.today()
             start_date = end_date - timedelta(days=days)
-            
+
             metrics = await self.health_manager.get_health_metrics(start_date, end_date)
             summary = await self.health_manager.get_health_summary(start_date, end_date)
-            
+
             result = await self.tribe_analyzer.analyze_brain_health_correlation(metrics, summary)
             return result
 
@@ -873,6 +935,7 @@ class NotionHealthMCPServer:
             path = arguments.get("path", "")
             try:
                 from .brain_viz import open_file
+
                 open_file(path)
                 return {"success": True, "opened": path}
             except Exception as e:
@@ -923,27 +986,27 @@ class NotionHealthMCPServer:
     def list_tools(self) -> List:
         """List all available tools (for testing)."""
         return [
-            type('Tool', (), {'name': 'log_health_metric'})(),
-            type('Tool', (), {'name': 'get_health_summary'})(),
-            type('Tool', (), {'name': 'add_medication'})(),
-            type('Tool', (), {'name': 'get_medication_schedule'})(),
-            type('Tool', (), {'name': 'add_appointment'})(),
-            type('Tool', (), {'name': 'get_upcoming_appointments'})(),
-            type('Tool', (), {'name': 'set_health_goal'})(),
-            type('Tool', (), {'name': 'get_goal_progress'})(),
-            type('Tool', (), {'name': 'update_goal_progress'})(),
-            type('Tool', (), {'name': 'log_symptom'})(),
-            type('Tool', (), {'name': 'analyze_symptoms'})(),
-            type('Tool', (), {'name': 'get_ai_insights'})(),
-            type('Tool', (), {'name': 'predict_brain_response'})(),
-            type('Tool', (), {'name': 'analyze_brain_health_correlation'})(),
-            type('Tool', (), {'name': 'get_optimal_schedule'})(),
-            type('Tool', (), {'name': 'get_cognitive_health_report'})(),
-            type('Tool', (), {'name': 'predict_brain_from_video'})(),
-            type('Tool', (), {'name': 'predict_brain_from_audio'})(),
-            type('Tool', (), {'name': 'predict_brain_multimodal'})(),
-            type('Tool', (), {'name': 'generate_brain_visualization'})(),
-            type('Tool', (), {'name': 'open_brain_visualization'})(),
+            type("Tool", (), {"name": "log_health_metric"})(),
+            type("Tool", (), {"name": "get_health_summary"})(),
+            type("Tool", (), {"name": "add_medication"})(),
+            type("Tool", (), {"name": "get_medication_schedule"})(),
+            type("Tool", (), {"name": "add_appointment"})(),
+            type("Tool", (), {"name": "get_upcoming_appointments"})(),
+            type("Tool", (), {"name": "set_health_goal"})(),
+            type("Tool", (), {"name": "get_goal_progress"})(),
+            type("Tool", (), {"name": "update_goal_progress"})(),
+            type("Tool", (), {"name": "log_symptom"})(),
+            type("Tool", (), {"name": "analyze_symptoms"})(),
+            type("Tool", (), {"name": "get_ai_insights"})(),
+            type("Tool", (), {"name": "predict_brain_response"})(),
+            type("Tool", (), {"name": "analyze_brain_health_correlation"})(),
+            type("Tool", (), {"name": "get_optimal_schedule"})(),
+            type("Tool", (), {"name": "get_cognitive_health_report"})(),
+            type("Tool", (), {"name": "predict_brain_from_video"})(),
+            type("Tool", (), {"name": "predict_brain_from_audio"})(),
+            type("Tool", (), {"name": "predict_brain_multimodal"})(),
+            type("Tool", (), {"name": "generate_brain_visualization"})(),
+            type("Tool", (), {"name": "open_brain_visualization"})(),
         ]
 
 
@@ -955,6 +1018,7 @@ def main():
     # Load .env from project root
     try:
         from dotenv import load_dotenv
+
         load_dotenv(os.path.join(_project_root, ".env"))
     except ImportError:
         pass
