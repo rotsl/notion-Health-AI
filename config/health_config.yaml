@@ -1,0 +1,285 @@
+# NotionHealth AI Configuration
+# Customize health tracking behavior and settings
+
+# ===========================================
+# General Settings
+# ===========================================
+general:
+  timezone: "UTC"
+  date_format: "%Y-%m-%d"
+  time_format: "%H:%M"
+  first_day_of_week: "monday"  # monday or sunday
+  language: "en"
+
+# ===========================================
+# Health Metrics Configuration
+# ===========================================
+health_metrics:
+  # Weight tracking
+  weight:
+    enabled: true
+    unit: "lbs"  # lbs or kg
+    goal_range:
+      min: 100
+      max: 300
+    alert_threshold: 5  # Alert if change exceeds this in a week
+
+  # Sleep tracking
+  sleep:
+    enabled: true
+    recommended_hours:
+      min: 7
+      max: 9
+    quality_scale: 10  # 1-10 scale
+    optimal_bedtime: "22:30"
+    optimal_wake_time: "06:30"
+
+  # Exercise tracking
+  exercise:
+    enabled: true
+    types:
+      - name: "running"
+        calories_per_minute: 10
+      - name: "walking"
+        calories_per_minute: 4
+      - name: "cycling"
+        calories_per_minute: 8
+      - name: "swimming"
+        calories_per_minute: 10
+      - name: "strength_training"
+        calories_per_minute: 6
+      - name: "yoga"
+        calories_per_minute: 3
+      - name: "hiit"
+        calories_per_minute: 12
+      - name: "cardio"
+        calories_per_minute: 8
+    weekly_goal_minutes: 150
+
+  # Steps tracking
+  steps:
+    enabled: true
+    daily_goal: 10000
+    milestones:
+      - 5000
+      - 10000
+      - 15000
+      - 20000
+
+  # Mood tracking
+  mood:
+    enabled: true
+    scale: 10  # 1-10 scale
+    labels:
+      1: "Very Low"
+      2: "Low"
+      3: "Somewhat Low"
+      4: "Below Average"
+      5: "Average"
+      6: "Above Average"
+      7: "Somewhat High"
+      8: "High"
+      9: "Very High"
+      10: "Excellent"
+
+  # Energy tracking
+  energy:
+    enabled: true
+    scale: 10  # 1-10 scale
+
+  # Water intake
+  water:
+    enabled: true
+    glass_size_ml: 250
+    daily_goal_glasses: 8
+
+  # Vital signs
+  vital_signs:
+    blood_pressure:
+      enabled: true
+      normal_systolic:
+        min: 90
+        max: 120
+      normal_diastolic:
+        min: 60
+        max: 80
+      alert_high: 140
+
+    heart_rate:
+      enabled: true
+      normal_range:
+        min: 60
+        max: 100
+      alert_high: 120
+      alert_low: 50
+
+# ===========================================
+# Medication Tracking
+# ===========================================
+medications:
+  reminder_enabled: true
+  reminder_minutes_before: 15
+  adherence_tracking: true
+  interaction_checking: true
+
+  common_times:
+    morning: "08:00"
+    afternoon: "13:00"
+    evening: "18:00"
+    bedtime: "22:00"
+
+# ===========================================
+# Appointment Management
+# ===========================================
+appointments:
+  reminder_enabled: true
+  reminder_days_before: 1
+  reminder_time: "09:00"
+
+  appointment_types:
+    checkup:
+      color: "blue"
+      default_duration_minutes: 30
+    follow_up:
+      color: "green"
+      default_duration_minutes: 15
+    specialist:
+      color: "purple"
+      default_duration_minutes: 45
+    dental:
+      color: "cyan"
+      default_duration_minutes: 30
+    vision:
+      color: "teal"
+      default_duration_minutes: 30
+    mental_health:
+      color: "pink"
+      default_duration_minutes: 50
+    lab_work:
+      color: "orange"
+      default_duration_minutes: 15
+
+# ===========================================
+# Goal Tracking
+# ===========================================
+goals:
+  check_interval_hours: 6
+  progress_update_frequency: "daily"
+
+  default_goals:
+    weight:
+      healthy_bmi_range:
+        min: 18.5
+        max: 24.9
+      recommended_weekly_change_lbs: 1.0
+
+    exercise:
+      weekly_minutes: 150
+      weekly_days: 5
+
+    sleep:
+      target_hours: 8
+
+    steps:
+      daily_target: 10000
+
+    water:
+      daily_glasses: 8
+
+# ===========================================
+# Symptom Tracking
+# ===========================================
+symptoms:
+  pattern_analysis_enabled: true
+  correlation_check_enabled: true
+  minimum_data_points_for_analysis: 5
+
+  severity_labels:
+    1: "Minimal"
+    2: "Very Mild"
+    3: "Mild"
+    4: "Moderately Mild"
+    5: "Moderate"
+    6: "Moderately Severe"
+    7: "Severe"
+    8: "Very Severe"
+    9: "Extremely Severe"
+    10: "Unbearable"
+
+# ===========================================
+# AI Insights
+# ===========================================
+ai_insights:
+  enabled: true
+  refresh_interval_hours: 6
+  confidence_threshold: 0.7
+
+  categories:
+    - weight
+    - sleep
+    - exercise
+    - mood
+    - energy
+    - overall
+
+  insight_types:
+    - trend_analysis
+    - prediction
+    - recommendation
+    - correlation
+    - anomaly_detection
+
+# ===========================================
+# Notifications
+# ===========================================
+notifications:
+  enabled: true
+
+  channels:
+    cli:
+      enabled: true
+    email:
+      enabled: false
+      # smtp_host: "smtp.gmail.com"
+      # smtp_port: 587
+      # smtp_user: ""
+      # smtp_password: ""
+
+  notification_types:
+    medication_reminder:
+      enabled: true
+      priority: "high"
+    appointment_reminder:
+      enabled: true
+      priority: "high"
+    goal_milestone:
+      enabled: true
+      priority: "medium"
+    health_alert:
+      enabled: true
+      priority: "high"
+    weekly_summary:
+      enabled: true
+      day: "sunday"
+      time: "20:00"
+
+# ===========================================
+# Data Management
+# ===========================================
+data:
+  retention_days: 365
+  export_formats:
+    - json
+    - csv
+  backup_enabled: false
+  backup_interval_days: 7
+
+# ===========================================
+# Display Settings
+# ===========================================
+display:
+  theme: "default"  # default, dark, light
+  show_emojis: true
+  table_style: "rounded"  # simple, rounded, double
+  date_display_format: "%a %b %d, %Y"
+  time_display_format: "%I:%M %p"

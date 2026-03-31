@@ -1,0 +1,54 @@
+{
+  "name": "NotionHealth AI",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+  "forwardPorts": [8000],
+  "portsAttributes": {
+    "8000": {
+      "label": "NotionHealth API + Web GUI",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  "postCreateCommand": "pip install --upgrade pip && pip install -e '.[dev]'",
+  "postStartCommand": "echo 'Run: make serve-api  to start the web GUI at http://localhost:8000'",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.black-formatter",
+        "ms-python.flake8",
+        "charliermarsh.ruff",
+        "tamasfe.even-better-toml",
+        "redhat.vscode-yaml",
+        "GitHub.copilot"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "[python]": {
+          "editor.defaultFormatter": "ms-python.black-formatter"
+        },
+        "python.testing.pytestEnabled": true,
+        "python.testing.pytestArgs": ["tests/"]
+      }
+    }
+  },
+  "secrets": {
+    "HUGGING_FACE_TOKEN": {
+      "description": "HuggingFace token for TRIBEv2 brain model (optional — simulation works without it)",
+      "documentationUrl": "https://huggingface.co/settings/tokens"
+    }
+  },
+  "remoteEnv": {
+    "HUGGING_FACE_TOKEN": "${localEnv:HUGGING_FACE_TOKEN}",
+    "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}",
+    "NOTION_API_KEY": "${localEnv:NOTION_API_KEY}"
+  },
+  "mounts": [
+    "source=${localWorkspaceFolder}/visualizations,target=/workspaces/notion-health-ai/visualizations,type=bind,consistency=cached"
+  ]
+}

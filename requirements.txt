@@ -1,0 +1,58 @@
+# Core Dependencies
+notion-client>=2.2.1
+mcp>=1.0.0
+anthropic>=0.25.0
+openai>=1.12.0
+google-generativeai>=0.8.0
+httpx>=0.27.0
+aiohttp>=3.9.0
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+python-multipart>=0.0.9
+aiofiles>=23.2.1
+pydantic>=2.6.0
+pandas>=2.2.0
+numpy>=1.26.0  # Use numpy==2.2.6 if running TRIBEv2 (see optional install below)
+python-dateutil>=2.8.2
+rich>=13.7.0
+click>=8.1.7
+questionary>=2.0.1
+python-dotenv>=1.0.0
+pyyaml>=6.0.1
+toml>=0.10.2
+loguru>=0.7.2
+validators>=0.22.0
+
+# TRIBEv2 brain model (optional — requires HuggingFace token with LLaMA 3.2 access)
+# Without these the system uses simulation-based cognitive analysis (fully functional)
+# IMPORTANT: Requires native arm64 Python 3.11+ on Apple Silicon
+#   Use: /opt/homebrew/bin/python3.11 -m venv venv_arm64
+# Install TRIBEv2:
+#   git clone https://github.com/facebookresearch/tribev2 /tmp/tribev2
+#   pip install "torch==2.5.1" "numpy==2.2.6" whisperx
+#   pip install -e /tmp/tribev2
+# torch==2.5.1
+# torchvision==0.20.1
+# whisperx  # uses Whisper for audio transcription in text pipeline
+
+# Brain visualization (optional — needed for brain_viz.py surface plots and interactive HTML)
+# pip install plotly nilearn nibabel imageio[ffmpeg] pyvista
+# plotly — interactive 3D HTML brain visualizations (primary viz backend)
+plotly>=5.18.0
+# nilearn + nibabel — surface mesh loading and static PNG brain plots
+nilearn>=0.10.0
+nibabel>=5.1.0
+# imageio — animated GIF generation
+imageio>=2.33.0
+# pyvista — 3D interactive window (optional; requires display server)
+# pyvista>=0.43.0
+
+# Development Dependencies
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+pytest-cov>=4.1.0
+black>=24.1.0
+flake8>=7.0.0
+mypy>=1.8.0
+isort>=5.13.0
+pre-commit>=3.6.0

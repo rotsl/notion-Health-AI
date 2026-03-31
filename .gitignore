@@ -1,0 +1,108 @@
+# === Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# === Distribution / packaging ===
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+notion_health_ai.egg-info/
+notion-health-ai.egg-info/
+tribev2.egg-info/
+
+# === Virtual environments ===
+.venv
+env/
+venv/
+ENV/
+venv_arm64/
+
+# === Tests / coverage ===
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# === Secrets & local config ===
+.env
+.env.local
+.env.*.local
+secrets/
+*.pem
+*.key
+
+# === Logs ===
+logs/
+*.log
+
+# === ML / TRIBEv2 artefacts ===
+cache/
+*.ckpt
+*.pt
+*.bin
+
+# === Generated brain visualizations ===
+# Large HTML, GIF, PNG and MP4 files generated at runtime
+visualizations/*
+!visualizations/.gitkeep
+
+# === Docker ===
+*.tar
+
+# === macOS ===
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# === Windows ===
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# === IDE ===
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+
+# === Misc ===
+.ipynb_checkpoints
+.python-version
+.mypy_cache/
+.dmypy.json
+dmypy.json
+*.tmp
+*.temp
+*.bak
+notion_exports/
+health_reports/
+paper.pdf
+
+# === Claude Code internal files ===
+.claude/

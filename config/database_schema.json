@@ -1,0 +1,401 @@
+{
+  "databases": {
+    "health_metrics": {
+      "name": "Health Metrics",
+      "description": "Daily health tracking database",
+      "properties": {
+        "Name": {
+          "type": "title",
+          "description": "Entry name"
+        },
+        "Date": {
+          "type": "date",
+          "description": "Date of the health measurement"
+        },
+        "Weight": {
+          "type": "number",
+          "description": "Weight in pounds",
+          "number": {
+            "format": "number"
+          }
+        },
+        "Sleep Hours": {
+          "type": "number",
+          "description": "Hours of sleep",
+          "number": {
+            "format": "number"
+          }
+        },
+        "Sleep Quality": {
+          "type": "number",
+          "description": "Sleep quality rating 1-10",
+          "number": {
+            "format": "number"
+          }
+        },
+        "Exercise Type": {
+          "type": "select",
+          "description": "Type of exercise",
+          "select": {
+            "options": [
+              {"name": "running", "color": "red"},
+              {"name": "walking", "color": "green"},
+              {"name": "cycling", "color": "blue"},
+              {"name": "swimming", "color": "blue"},
+              {"name": "strength_training", "color": "purple"},
+              {"name": "yoga", "color": "pink"},
+              {"name": "hiit", "color": "orange"},
+              {"name": "cardio", "color": "yellow"},
+              {"name": "other", "color": "gray"}
+            ]
+          }
+        },
+        "Exercise Minutes": {
+          "type": "number",
+          "description": "Exercise duration in minutes",
+          "number": {
+            "format": "number"
+          }
+        },
+        "Steps": {
+          "type": "number",
+          "description": "Daily step count",
+          "number": {
+            "format": "number"
+          }
+        },
+        "Mood": {
+          "type": "number",
+          "description": "Mood rating 1-10",
+          "number": {
+            "format": "number"
+          }
+        },
+        "Energy": {
+          "type": "number",
+          "description": "Energy level 1-10",
+          "number": {
+            "format": "number"
+          }
+        },
+        "Water Glasses": {
+          "type": "number",
+          "description": "Glasses of water consumed",
+          "number": {
+            "format": "number"
+          }
+        },
+        "BP Systolic": {
+          "type": "number",
+          "description": "Systolic blood pressure",
+          "number": {
+            "format": "number"
+          }
+        },
+        "BP Diastolic": {
+          "type": "number",
+          "description": "Diastolic blood pressure",
+          "number": {
+            "format": "number"
+          }
+        },
+        "Heart Rate": {
+          "type": "number",
+          "description": "Resting heart rate",
+          "number": {
+            "format": "number"
+          }
+        },
+        "Notes": {
+          "type": "rich_text",
+          "description": "Additional notes"
+        }
+      }
+    },
+    "medications": {
+      "name": "Medications",
+      "description": "Medication tracking database",
+      "properties": {
+        "Name": {
+          "type": "title",
+          "description": "Medication name"
+        },
+        "Dosage": {
+          "type": "rich_text",
+          "description": "Dosage amount"
+        },
+        "Frequency": {
+          "type": "select",
+          "description": "How often to take",
+          "select": {
+            "options": [
+              {"name": "once_daily", "color": "blue"},
+              {"name": "twice_daily", "color": "green"},
+              {"name": "three_times_daily", "color": "yellow"},
+              {"name": "weekly", "color": "purple"},
+              {"name": "as_needed", "color": "gray"}
+            ]
+          }
+        },
+        "Start Date": {
+          "type": "date",
+          "description": "When medication was started"
+        },
+        "End Date": {
+          "type": "date",
+          "description": "When medication should end"
+        },
+        "Prescribing Doctor": {
+          "type": "rich_text",
+          "description": "Doctor who prescribed"
+        },
+        "Purpose": {
+          "type": "rich_text",
+          "description": "What it's for"
+        },
+        "Active": {
+          "type": "checkbox",
+          "description": "Currently active"
+        },
+        "Notes": {
+          "type": "rich_text",
+          "description": "Additional notes"
+        }
+      }
+    },
+    "appointments": {
+      "name": "Appointments",
+      "description": "Medical appointments database",
+      "properties": {
+        "Doctor Name": {
+          "type": "title",
+          "description": "Doctor or provider name"
+        },
+        "Date": {
+          "type": "date",
+          "description": "Appointment date"
+        },
+        "Time": {
+          "type": "rich_text",
+          "description": "Appointment time"
+        },
+        "Type": {
+          "type": "select",
+          "description": "Type of appointment",
+          "select": {
+            "options": [
+              {"name": "checkup", "color": "blue"},
+              {"name": "follow_up", "color": "green"},
+              {"name": "specialist", "color": "purple"},
+              {"name": "dental", "color": "blue"},
+              {"name": "vision", "color": "yellow"},
+              {"name": "mental_health", "color": "pink"},
+              {"name": "lab_work", "color": "orange"},
+              {"name": "other", "color": "gray"}
+            ]
+          }
+        },
+        "Facility": {
+          "type": "rich_text",
+          "description": "Clinic/hospital name"
+        },
+        "Reason": {
+          "type": "rich_text",
+          "description": "Reason for visit"
+        },
+        "Status": {
+          "type": "select",
+          "description": "Appointment status",
+          "select": {
+            "options": [
+              {"name": "scheduled", "color": "blue"},
+              {"name": "confirmed", "color": "green"},
+              {"name": "completed", "color": "gray"},
+              {"name": "cancelled", "color": "red"}
+            ]
+          }
+        },
+        "Notes": {
+          "type": "rich_text",
+          "description": "Post-appointment notes"
+        }
+      }
+    },
+    "goals": {
+      "name": "Health Goals",
+      "description": "Health and wellness goals database",
+      "properties": {
+        "Title": {
+          "type": "title",
+          "description": "Goal title"
+        },
+        "Type": {
+          "type": "select",
+          "description": "Goal type",
+          "select": {
+            "options": [
+              {"name": "weight", "color": "blue"},
+              {"name": "exercise", "color": "green"},
+              {"name": "sleep", "color": "purple"},
+              {"name": "steps", "color": "yellow"},
+              {"name": "water_intake", "color": "blue"},
+              {"name": "meditation", "color": "pink"},
+              {"name": "custom", "color": "gray"}
+            ]
+          }
+        },
+        "Target Value": {
+          "type": "number",
+          "description": "Target value",
+          "number": {
+            "format": "number"
+          }
+        },
+        "Current Value": {
+          "type": "number",
+          "description": "Current progress",
+          "number": {
+            "format": "number"
+          }
+        },
+        "Unit": {
+          "type": "rich_text",
+          "description": "Unit of measurement"
+        },
+        "Target Date": {
+          "type": "date",
+          "description": "Deadline"
+        },
+        "Status": {
+          "type": "select",
+          "description": "Goal status",
+          "select": {
+            "options": [
+              {"name": "not_started", "color": "gray"},
+              {"name": "in_progress", "color": "blue"},
+              {"name": "on_track", "color": "green"},
+              {"name": "achieved", "color": "yellow"},
+              {"name": "paused", "color": "red"}
+            ]
+          }
+        },
+        "Notes": {
+          "type": "rich_text",
+          "description": "Additional notes"
+        }
+      }
+    },
+    "brain_analysis": {
+      "name": "Brain Analysis",
+      "description": "TRIBEv2 brain activity analysis sessions",
+      "properties": {
+        "Name": {
+          "type": "title",
+          "description": "Session label"
+        },
+        "Date": {
+          "type": "date",
+          "description": "Analysis date"
+        },
+        "Input Type": {
+          "type": "select",
+          "description": "Type of health data used as input",
+          "select": {
+            "options": [
+              {"name": "health_narrative", "color": "blue"},
+              {"name": "symptom_text", "color": "red"},
+              {"name": "journal", "color": "green"},
+              {"name": "activity", "color": "orange"}
+            ]
+          }
+        },
+        "Input Summary": {
+          "type": "rich_text",
+          "description": "Summary of data analysed"
+        },
+        "Cognitive Load": {
+          "type": "number",
+          "description": "Estimated cognitive load 0-10",
+          "number": {"format": "number"}
+        },
+        "Stress Level": {
+          "type": "number",
+          "description": "Estimated stress 0-10",
+          "number": {"format": "number"}
+        },
+        "Emotional Valence": {
+          "type": "number",
+          "description": "Emotional tone -1 (negative) to +1 (positive)",
+          "number": {"format": "number"}
+        },
+        "Default Mode Network": {
+          "type": "number",
+          "description": "DMN activation 0-1",
+          "number": {"format": "number"}
+        },
+        "Executive Control": {
+          "type": "number",
+          "description": "Executive control network activation 0-1",
+          "number": {"format": "number"}
+        },
+        "Salience Network": {
+          "type": "number",
+          "description": "Salience/stress network activation 0-1",
+          "number": {"format": "number"}
+        },
+        "Insights": {
+          "type": "rich_text",
+          "description": "AI-generated cognitive insights"
+        },
+        "Recommendations": {
+          "type": "rich_text",
+          "description": "Actionable recommendations"
+        },
+        "TRIBEv2 Model Used": {
+          "type": "checkbox",
+          "description": "Whether real TRIBEv2 weights were used (vs. simulation)"
+        }
+      }
+    },
+    "symptoms": {
+      "name": "Symptom Log",
+      "description": "Symptom tracking database",
+      "properties": {
+        "Symptom": {
+          "type": "title",
+          "description": "Symptom name"
+        },
+        "Date": {
+          "type": "date",
+          "description": "Date symptom occurred"
+        },
+        "Time": {
+          "type": "rich_text",
+          "description": "Time symptom started"
+        },
+        "Severity": {
+          "type": "number",
+          "description": "Severity 1-10",
+          "number": {
+            "format": "number"
+          }
+        },
+        "Body Part": {
+          "type": "rich_text",
+          "description": "Affected body part"
+        },
+        "Duration": {
+          "type": "number",
+          "description": "Duration in minutes",
+          "number": {
+            "format": "number"
+          }
+        },
+        "Notes": {
+          "type": "rich_text",
+          "description": "Additional notes"
+        }
+      }
+    }
+  }
+}
