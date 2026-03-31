@@ -3,8 +3,7 @@ Tests for AI Insights and Tribe v2 Integration modules.
 """
 
 import pytest
-from datetime import date, timedelta
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import patch
 
 from notion_health_ai.ai_insights import AIInsightsEngine
 from notion_health_ai.tribe_integration import (

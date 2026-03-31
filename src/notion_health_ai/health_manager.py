@@ -6,7 +6,7 @@ including logging metrics, tracking medications, and managing appointments.
 """
 
 import os
-from datetime import datetime, date, timedelta
+from datetime import date, timedelta
 from typing import Optional, List, Dict, Any
 from loguru import logger
 
@@ -25,9 +25,7 @@ from notion_health_ai.models import (
     ExerciseType,
     MedicationFrequency,
     AppointmentType,
-    AppointmentStatus,
     GoalType,
-    GoalStatus,
     SymptomSeverity,
 )
 from notion_health_ai.notion_client import NotionClient
@@ -738,7 +736,10 @@ class HealthManager:
 
             session = BrainAnalysisSession(
                 input_type="activity",
-                input_summary=f"{activity} for {duration_minutes} min — top regions: {region_summary}",
+                input_summary=(
+                    f"{activity} for {duration_minutes} min"
+                    f" \u2014 top regions: {region_summary}"
+                ),
                 cognitive_load_score=pred_data.get("wellness_score"),
                 stress_indicator=None,
                 emotional_valence=None,

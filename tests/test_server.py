@@ -3,8 +3,7 @@ Tests for MCP Server module.
 """
 
 import pytest
-import json
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, patch
 from datetime import date, timedelta
 
 from notion_health_ai.server import NotionHealthMCPServer

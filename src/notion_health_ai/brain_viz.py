@@ -13,7 +13,6 @@ All outputs are saved to <project_root>/visualizations/.
 
 from __future__ import annotations
 
-import os
 import webbrowser
 from datetime import datetime
 from pathlib import Path

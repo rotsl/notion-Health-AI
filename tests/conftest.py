@@ -54,7 +54,10 @@ def mock_anthropic_response():
         "content": [
             {
                 "type": "text",
-                "text": '{"title": "Test Insight", "summary": "Test summary", "recommendations": ["Do this"]}',
+                "text": (
+                    '{"title": "Test Insight", "summary": "Test summary",'
+                    ' "recommendations": ["Do this"]}'
+                ),
             }
         ]
     }

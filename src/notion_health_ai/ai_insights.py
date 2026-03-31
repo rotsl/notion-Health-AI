@@ -296,11 +296,27 @@ Provide a comprehensive health assessment with:
 
     def _generate_mock_insight(self, category: str, summary: HealthSummary) -> Dict:
         """Generate mock insight when AI is not available."""
+        _wt_dir = (
+            "decreased" if summary.weight_change and summary.weight_change < 0 else "increased"
+        )
+        _wt_prog = (
+            "healthy progress"
+            if summary.weight_change and abs(summary.weight_change) < 2
+            else "room for improvement"
+        )
         mock_insights = {
             "weight": {
                 "title": "Weight Trend Analysis",
-                "summary": f"Your weight has {'decreased' if summary.weight_change and summary.weight_change < 0 else 'increased'} by {abs(summary.weight_change or 0):.1f} lbs over the analysis period.",
-                "details": f"Your average weight is {summary.avg_weight or 0:.1f} lbs with a range of {summary.min_weight or 0:.1f} to {summary.max_weight or 0:.1f} lbs. This shows {'healthy progress' if summary.weight_change and abs(summary.weight_change) < 2 else 'room for improvement'}.",
+                "summary": (
+                    f"Your weight has {_wt_dir}"
+                    f" by {abs(summary.weight_change or 0):.1f} lbs over the analysis period."
+                ),
+                "details": (
+                    f"Your average weight is {summary.avg_weight or 0:.1f} lbs"
+                    f" with a range of {summary.min_weight or 0:.1f}"
+                    f" to {summary.max_weight or 0:.1f} lbs."
+                    f" This shows {_wt_prog}."
+                ),
                 "recommendations": [
                     "Continue monitoring weight daily for better trend visibility",
                     "Aim for 0.5-1 lb per week for sustainable weight change",
@@ -309,8 +325,14 @@ Provide a comprehensive health assessment with:
             },
             "sleep": {
                 "title": "Sleep Quality Analysis",
-                "summary": f"You're averaging {summary.avg_sleep_hours or 0:.1f} hours of sleep with quality rating of {summary.avg_sleep_quality or 0:.1f}/10.",
-                "details": "Sleep is crucial for recovery, cognitive function, and overall health. Your current sleep pattern shows opportunities for optimization.",
+                "summary": (
+                    f"You're averaging {summary.avg_sleep_hours or 0:.1f} hours of sleep"
+                    f" with quality rating of {summary.avg_sleep_quality or 0:.1f}/10."
+                ),
+                "details": (
+                    "Sleep is crucial for recovery, cognitive function, and overall health."
+                    " Your current sleep pattern shows opportunities for optimization."
+                ),
                 "recommendations": [
                     "Aim for 7-9 hours of sleep consistently",
                     "Establish a regular sleep schedule",
@@ -320,8 +342,14 @@ Provide a comprehensive health assessment with:
             },
             "exercise": {
                 "title": "Activity Level Analysis",
-                "summary": f"You exercised {summary.total_exercise_days} days with {summary.total_exercise_minutes} total minutes of activity.",
-                "details": f"Your average daily steps are {summary.avg_daily_steps or 0:.0f}. The WHO recommends 150 minutes of moderate activity per week.",
+                "summary": (
+                    f"You exercised {summary.total_exercise_days} days"
+                    f" with {summary.total_exercise_minutes} total minutes of activity."
+                ),
+                "details": (
+                    f"Your average daily steps are {summary.avg_daily_steps or 0:.0f}."
+                    " The WHO recommends 150 minutes of moderate activity per week."
+                ),
                 "recommendations": [
                     "Aim for at least 150 minutes of moderate exercise weekly",
                     "Try to reach 10,000 steps daily",
@@ -331,8 +359,15 @@ Provide a comprehensive health assessment with:
             },
             "mood": {
                 "title": "Mental Wellness Analysis",
-                "summary": f"Your average mood is {summary.avg_mood or 0:.1f}/10 and energy level is {summary.avg_energy or 0:.1f}/10.",
-                "details": "Mental wellness is just as important as physical health. Tracking mood patterns can help identify triggers and optimize daily routines.",
+                "summary": (
+                    f"Your average mood is {summary.avg_mood or 0:.1f}/10"
+                    f" and energy level is {summary.avg_energy or 0:.1f}/10."
+                ),
+                "details": (
+                    "Mental wellness is just as important as physical health."
+                    " Tracking mood patterns can help identify triggers"
+                    " and optimize daily routines."
+                ),
                 "recommendations": [
                     "Practice daily mindfulness or meditation",
                     "Maintain social connections",
@@ -342,8 +377,14 @@ Provide a comprehensive health assessment with:
             },
             "overall": {
                 "title": "Overall Health Assessment",
-                "summary": "Your health metrics show a balanced picture with areas of strength and opportunities for improvement.",
-                "details": f"Based on {summary.total_days} days of data, you're making progress in multiple health dimensions. Focus on consistency and gradual improvement.",
+                "summary": (
+                    "Your health metrics show a balanced picture with areas of strength"
+                    " and opportunities for improvement."
+                ),
+                "details": (
+                    f"Based on {summary.total_days} days of data, you're making progress"
+                    " in multiple health dimensions. Focus on consistency and gradual improvement."
+                ),
                 "recommendations": [
                     "Maintain consistent sleep schedule",
                     "Continue regular exercise routine",
@@ -440,7 +481,9 @@ Provide a comprehensive health assessment with:
                 category="symptoms",
                 title="Symptom Analysis",
                 summary="No symptoms logged in the analysis period.",
-                details="Continue tracking any symptoms you experience for better pattern recognition.",
+                details=(
+                    "Continue tracking any symptoms you experience for better pattern recognition."
+                ),
                 recommendations=["Log symptoms as they occur for better tracking"],
                 data_points_used=0,
             )
@@ -456,8 +499,9 @@ Provide a comprehensive health assessment with:
         top_symptoms = sorted_symptoms[:5]
 
         # Build analysis
-        summary = f"Analyzed {len(symptoms)} symptom entries. Most frequent: {', '.join([s[0] for s in top_symptoms[:3]])}."
-        details = f"Symptom frequency analysis:\n"
+        top_names = ", ".join([s[0] for s in top_symptoms[:3]])
+        summary = f"Analyzed {len(symptoms)} symptom entries. Most frequent: {top_names}."
+        details = "Symptom frequency analysis:\n"
         for name, count in top_symptoms:
             details += f"- {name}: {count} occurrences\n"
 
@@ -510,8 +554,15 @@ Provide a comprehensive health assessment with:
                     AIInsight(
                         category="correlation",
                         title="Sleep-Mood Connection",
-                        summary=f"Found a {'positive' if correlation > 0 else 'negative'} correlation ({correlation:.2f}) between sleep and mood.",
-                        details="Your mood tends to be better when you get more sleep. This is consistent with research showing sleep quality significantly impacts emotional well-being.",
+                        summary=(
+                            f"Found a {'positive' if correlation > 0 else 'negative'}"
+                            f" correlation ({correlation:.2f}) between sleep and mood."
+                        ),
+                        details=(
+                            "Your mood tends to be better when you get more sleep."
+                            " This is consistent with research showing sleep quality"
+                            " significantly impacts emotional well-being."
+                        ),
                         recommendations=[
                             "Prioritize sleep on nights before important days",
                             "Track your mood after different sleep durations",
@@ -536,8 +587,14 @@ Provide a comprehensive health assessment with:
                     AIInsight(
                         category="correlation",
                         title="Exercise-Energy Connection",
-                        summary=f"Found a {'positive' if correlation > 0 else 'negative'} correlation ({correlation:.2f}) between exercise and energy.",
-                        details="Your energy levels are connected to your exercise patterns. Regular physical activity can boost energy levels throughout the day.",
+                        summary=(
+                            f"Found a {'positive' if correlation > 0 else 'negative'}"
+                            f" correlation ({correlation:.2f}) between exercise and energy."
+                        ),
+                        details=(
+                            "Your energy levels are connected to your exercise patterns."
+                            " Regular physical activity can boost energy levels throughout the day."
+                        ),
                         recommendations=[
                             "Try morning exercise for sustained energy",
                             "Light exercise can help when feeling low energy",

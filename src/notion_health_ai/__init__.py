@@ -9,7 +9,10 @@ Version 2.0 adds Tribe v2 brain prediction capabilities.
 
 __version__ = "2.0.0"
 __author__ = "NotionHealth AI Team"
-__description__ = "AI-Powered Personal Health & Wellness Management System with Notion MCP and Tribe v2 Brain Prediction"
+__description__ = (
+    "AI-Powered Personal Health & Wellness Management System"
+    " with Notion MCP and Tribe v2 Brain Prediction"
+)
 
 from notion_health_ai.models import (
     HealthMetric,

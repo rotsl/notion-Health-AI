@@ -4,19 +4,16 @@ Tests for Health Manager module.
 
 import pytest
 from datetime import date, timedelta
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock
 
-from notion_health_ai.health_manager import HealthManager
 from notion_health_ai.models import (
     HealthMetric,
     Medication,
     Appointment,
     HealthGoal,
     SymptomLog,
-    MCPCallResult,
     MoodLevel,
     EnergyLevel,
-    ExerciseType,
     MedicationFrequency,
     AppointmentType,
     AppointmentStatus,

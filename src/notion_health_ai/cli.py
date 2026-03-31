@@ -5,16 +5,13 @@ Provides command-line interface for interacting with the health management syste
 """
 
 import asyncio
-import os
-import sys
-from datetime import datetime, date, timedelta
+from datetime import date, timedelta
 from typing import Optional
 import click
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
-from rich.progress import Progress, BarColumn
-from questionary import select, text, confirm
+from questionary import select, text
 
 from notion_health_ai.health_manager import HealthManager
 from notion_health_ai.ai_insights import AIInsightsEngine
@@ -24,8 +21,6 @@ from notion_health_ai.utils import (
     parse_date,
     get_mood_emoji,
     get_energy_emoji,
-    get_exercise_emoji,
-    format_health_score,
 )
 
 console = Console()
@@ -493,7 +488,8 @@ def insights(category: str, period: str):
                 console.print(f"  {i}. {rec}")
 
         console.print(
-            f"\n[dim]Confidence: {insight.confidence_score * 100:.0f}% | Priority: {insight.priority}[/dim]"
+            f"\n[dim]Confidence: {insight.confidence_score * 100:.0f}%"
+            f" | Priority: {insight.priority}[/dim]"
         )
         console.print("-" * 50)
 
@@ -523,9 +519,10 @@ def predict(activity: str, duration: int):
     """Predict brain response to a wellness activity using Tribe v2."""
     analyzer = get_tribe_analyzer()
 
-    console.print(Panel(f"🧠 Tribe v2 Brain Response Prediction", style="blue"))
+    console.print(Panel("🧠 Tribe v2 Brain Response Prediction", style="blue"))
     console.print(
-        f"\nAnalyzing brain response to [cyan]{activity}[/cyan] for [yellow]{duration}[/yellow] minutes...\n"
+        f"\nAnalyzing brain response to [cyan]{activity}[/cyan]"
+        f" for [yellow]{duration}[/yellow] minutes...\n"
     )
 
     result = asyncio.run(analyzer.predict_brain_response(activity, duration))
@@ -574,7 +571,7 @@ def analyze(days: int):
     metrics = asyncio.run(manager.get_health_metrics(start_date, end_date))
     summary = asyncio.run(manager.get_health_summary(start_date, end_date))
 
-    console.print(Panel(f"🧠 Tribe v2 Brain-Health Correlation Analysis", style="blue"))
+    console.print(Panel("🧠 Tribe v2 Brain-Health Correlation Analysis", style="blue"))
     console.print(f"\nAnalyzing {len(metrics)} health entries over {days} days...\n")
 
     # Run analysis
@@ -608,7 +605,7 @@ def analyze(days: int):
 
         # Display optimal timing
         if analysis.get("optimal_timing"):
-            console.print(f"\n[bold yellow]Optimal Activity Timing:[/bold yellow]")
+            console.print("\n[bold yellow]Optimal Activity Timing:[/bold yellow]")
             for activity, timing in analysis.get("optimal_timing", {}).items():
                 console.print(f"  ⏰ {activity}: {timing}")
     else:
@@ -620,7 +617,7 @@ def schedule():
     """Generate optimal daily schedule based on brain prediction."""
     analyzer = get_tribe_analyzer()
 
-    console.print(Panel(f"🧠 Optimal Daily Schedule (Tribe v2 AI)", style="blue"))
+    console.print(Panel("🧠 Optimal Daily Schedule (Tribe v2 AI)", style="blue"))
     console.print("\nGenerating schedule based on brain response patterns...\n")
 
     result = asyncio.run(analyzer.generate_optimal_schedule())
@@ -653,18 +650,54 @@ def schedule():
 
 
 _ACTIVITY_PROMPTS = {
-    "exercise": "I went for a {d} minute run and full body workout session, feeling my heart rate rise and muscles engage throughout the effort",
-    "meditation": "I spent {d} minutes in quiet meditation, focusing gently on my breath and letting thoughts pass without holding onto them",
-    "sleep": "I enjoyed a deep and restful sleep lasting {d} minutes, cycling through slow wave and REM stages for full recovery",
-    "reading": "I sat down and read a book for {d} minutes, fully absorbed in the text and following the narrative closely",
-    "music": "I listened to music for {d} minutes, letting the melodies and rhythms wash over me while I relaxed and enjoyed the sound",
-    "social": "I spent {d} minutes in warm and engaging conversation with close friends, laughing and sharing stories together",
-    "work": "I worked with deep concentration on challenging tasks for {d} minutes, organising my thoughts and solving complex problems",
-    "relaxation": "I spent {d} minutes relaxing completely, letting go of tension and allowing my body and mind to unwind fully",
-    "nature": "I walked through a quiet park and enjoyed the natural surroundings for {d} minutes, breathing fresh air and observing the trees and sky",
-    "learning": "I studied new and complex material for {d} minutes, taking notes and making connections between concepts to consolidate understanding",
-    "creative": "I engaged in open-ended creative work for {d} minutes, brainstorming freely and exploring novel ideas without judgment",
-    "mindfulness": "I practiced gentle mindfulness and body awareness for {d} minutes, noticing physical sensations and staying present in each moment",
+    "exercise": (
+        "I went for a {d} minute run and full body workout session,"
+        " feeling my heart rate rise and muscles engage throughout the effort"
+    ),
+    "meditation": (
+        "I spent {d} minutes in quiet meditation, focusing gently on my breath"
+        " and letting thoughts pass without holding onto them"
+    ),
+    "sleep": (
+        "I enjoyed a deep and restful sleep lasting {d} minutes,"
+        " cycling through slow wave and REM stages for full recovery"
+    ),
+    "reading": (
+        "I sat down and read a book for {d} minutes,"
+        " fully absorbed in the text and following the narrative closely"
+    ),
+    "music": (
+        "I listened to music for {d} minutes, letting the melodies and rhythms"
+        " wash over me while I relaxed and enjoyed the sound"
+    ),
+    "social": (
+        "I spent {d} minutes in warm and engaging conversation with close friends,"
+        " laughing and sharing stories together"
+    ),
+    "work": (
+        "I worked with deep concentration on challenging tasks for {d} minutes,"
+        " organising my thoughts and solving complex problems"
+    ),
+    "relaxation": (
+        "I spent {d} minutes relaxing completely,"
+        " letting go of tension and allowing my body and mind to unwind fully"
+    ),
+    "nature": (
+        "I walked through a quiet park and enjoyed the natural surroundings"
+        " for {d} minutes, breathing fresh air and observing the trees and sky"
+    ),
+    "learning": (
+        "I studied new and complex material for {d} minutes,"
+        " taking notes and making connections between concepts to consolidate understanding"
+    ),
+    "creative": (
+        "I engaged in open-ended creative work for {d} minutes,"
+        " brainstorming freely and exploring novel ideas without judgment"
+    ),
+    "mindfulness": (
+        "I practiced gentle mindfulness and body awareness for {d} minutes,"
+        " noticing physical sensations and staying present in each moment"
+    ),
 }
 
 

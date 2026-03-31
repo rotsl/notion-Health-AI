@@ -137,7 +137,8 @@ def _ensure_required_databases(mgr: Any, required: List[str]) -> None:
             detail=(
                 "Missing Notion database configuration: "
                 + ", ".join(missing)
-                + ". Run 'python scripts/setup_notion.py' or set these env vars in .env and restart the API."
+                + ". Run 'python scripts/setup_notion.py'"
+                + " or set these env vars in .env and restart the API."
             ),
         )
 
@@ -675,7 +676,10 @@ async def get_insights(
     if not insights:
         return {
             "success": False,
-            "error": "No insights generated. Verify Notion database data and AI provider configuration.",
+            "error": (
+                "No insights generated."
+                " Verify Notion database data and AI provider configuration."
+            ),
             "insights": [],
             "token_usage": token_usage,
         }
@@ -715,7 +719,7 @@ async def brain_from_text(
     )
     wellness_score = round(5.0 + mean_act * 4.0, 2)
 
-    title = f"Brain Activation — Text Input"
+    title = "Brain Activation — Text Input"
     flat_roi = {k: v.get("activation_level", 0.5) for k, v in brain_responses.items()}
 
     viz_paths: Dict[str, Optional[str]] = {}

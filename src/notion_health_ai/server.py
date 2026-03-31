@@ -9,7 +9,7 @@ Includes Tribe v2 brain prediction integration.
 import asyncio
 import json
 import os
-from typing import Optional, List, Dict, Any
+from typing import List, Dict, Any
 from datetime import datetime, date, timedelta
 from loguru import logger
 
@@ -20,11 +20,6 @@ try:
     from mcp.types import (
         Tool,
         TextContent,
-        ImageContent,
-        EmbeddedResource,
-        Resource,
-        Prompt,
-        PromptArgument,
     )
 
     MCP_AVAILABLE = True
@@ -35,7 +30,6 @@ except ImportError:
 from notion_health_ai.health_manager import HealthManager
 from notion_health_ai.ai_insights import AIInsightsEngine
 from notion_health_ai.tribe_integration import TribeHealthAnalyzer
-from notion_health_ai.models import MCPCallResult
 
 
 class NotionHealthMCPServer:
@@ -88,7 +82,7 @@ class NotionHealthMCPServer:
                         "properties": {
                             "date": {
                                 "type": "string",
-                                "description": "Date in YYYY-MM-DD format (optional, defaults to today)",
+                                "description": "Date in YYYY-MM-DD format (defaults to today)",
                             },
                             "weight": {
                                 "type": "number",
@@ -242,7 +236,7 @@ class NotionHealthMCPServer:
                         "properties": {
                             "date": {
                                 "type": "string",
-                                "description": "Date in YYYY-MM-DD format (optional, defaults to today)",
+                                "description": "Date in YYYY-MM-DD format (defaults to today)",
                             },
                         },
                     },
@@ -453,7 +447,7 @@ class NotionHealthMCPServer:
                             "category": {
                                 "type": "string",
                                 "enum": ["weight", "sleep", "exercise", "mood", "overall", "brain"],
-                                "description": "Category to analyze (optional, defaults to overall)",
+                                "description": "Category to analyze (defaults to overall)",
                             },
                             "period": {
                                 "type": "string",
@@ -466,7 +460,7 @@ class NotionHealthMCPServer:
                 # Tribe v2 Brain Prediction Tools
                 Tool(
                     name="predict_brain_response",
-                    description="Predict brain response to a wellness activity using Tribe v2 model",
+                    description="Predict brain response to a wellness activity using Tribe v2",
                     inputSchema={
                         "type": "object",
                         "properties": {
@@ -498,7 +492,10 @@ class NotionHealthMCPServer:
                 ),
                 Tool(
                     name="analyze_brain_health_correlation",
-                    description="Analyze correlations between health metrics and brain activity using Tribe v2",
+                    description=(
+                        "Analyze correlations between health metrics and brain activity"
+                        " using Tribe v2"
+                    ),
                     inputSchema={
                         "type": "object",
                         "properties": {
@@ -511,7 +508,7 @@ class NotionHealthMCPServer:
                 ),
                 Tool(
                     name="get_optimal_schedule",
-                    description="Generate an optimal daily schedule based on Tribe v2 brain science",
+                    description="Generate an optimal daily schedule based on Tribe v2",
                     inputSchema={
                         "type": "object",
                         "properties": {},
@@ -538,10 +535,14 @@ class NotionHealthMCPServer:
                 Tool(
                     name="predict_brain_from_video",
                     description=(
-                        "Predict brain activation from a video file using TRIBEv2's full multimodal pipeline: "
-                        "V-JEPA2 (visual frames) + Wav2Vec-BERT (audio) + LLaMA 3.2 (WhisperX transcript). "
-                        "Generates an interactive 3D brain visualization automatically opened in the browser. "
-                        "Requires an absolute file path to a .mp4, .avi, .mov, .mkv, or .webm file."
+                        "Predict brain activation from a video file using TRIBEv2's"
+                        " full multimodal pipeline: "
+                        "V-JEPA2 (visual frames) + Wav2Vec-BERT (audio)"
+                        " + LLaMA 3.2 (WhisperX transcript). "
+                        "Generates an interactive 3D brain visualization"
+                        " automatically opened in the browser. "
+                        "Requires an absolute file path to a"
+                        " .mp4, .avi, .mov, .mkv, or .webm file."
                     ),
                     inputSchema={
                         "type": "object",
@@ -556,7 +557,7 @@ class NotionHealthMCPServer:
                                     "type": "string",
                                     "enum": ["interactive", "static", "gif", "mp4", "heatmap"],
                                 },
-                                "description": "Visualizations to generate (default: [interactive, heatmap])",
+                                "description": "Viz types (default: [interactive, heatmap])",
                             },
                         },
                         "required": ["video_path"],
@@ -565,7 +566,8 @@ class NotionHealthMCPServer:
                 Tool(
                     name="predict_brain_from_audio",
                     description=(
-                        "Predict brain activation from an audio file using TRIBEv2's Wav2Vec-BERT + "
+                        "Predict brain activation from an audio file using"
+                        " TRIBEv2's Wav2Vec-BERT + "
                         "LLaMA 3.2 (via WhisperX transcription) feature extractors. "
                         "Generates an interactive 3D brain visualization in the browser. "
                         "Supports .wav, .mp3, .flac, .ogg files."
@@ -583,7 +585,7 @@ class NotionHealthMCPServer:
                                     "type": "string",
                                     "enum": ["interactive", "static", "gif", "mp4", "heatmap"],
                                 },
-                                "description": "Visualizations to generate (default: [interactive, heatmap])",
+                                "description": "Viz types (default: [interactive, heatmap])",
                             },
                         },
                         "required": ["audio_path"],
@@ -592,8 +594,10 @@ class NotionHealthMCPServer:
                 Tool(
                     name="predict_brain_multimodal",
                     description=(
-                        "Predict brain activation from multiple modalities simultaneously using TRIBEv2. "
-                        "Combines V-JEPA2 (video), Wav2Vec-BERT (audio), and LLaMA 3.2 (text) by averaging "
+                        "Predict brain activation from multiple modalities"
+                        " simultaneously using TRIBEv2. "
+                        "Combines V-JEPA2 (video), Wav2Vec-BERT (audio),"
+                        " and LLaMA 3.2 (text) by averaging "
                         "cortical predictions across all provided inputs. "
                         "Provide at least one of: video_path, audio_path, or text_stimulus."
                     ),
@@ -618,7 +622,7 @@ class NotionHealthMCPServer:
                                     "type": "string",
                                     "enum": ["interactive", "static", "gif", "mp4", "heatmap"],
                                 },
-                                "description": "Visualizations to generate (default: [interactive, heatmap])",
+                                "description": "Viz types (default: [interactive, heatmap])",
                             },
                         },
                     },
@@ -627,7 +631,8 @@ class NotionHealthMCPServer:
                     name="generate_brain_visualization",
                     description=(
                         "Re-generate a brain visualization from the most recent TRIBEv2 prediction "
-                        "stored in memory. Use this to get a different format (e.g. animated GIF or "
+                        "stored in memory. Use this to get a different format"
+                        " (e.g. animated GIF or "
                         "MP4) without re-running the model. Requires a prior prediction call."
                     ),
                     inputSchema={
@@ -644,7 +649,7 @@ class NotionHealthMCPServer:
                             },
                             "auto_open": {
                                 "type": "boolean",
-                                "description": "Auto-open HTML in browser for interactive type (default: true)",
+                                "description": "Auto-open in browser (interactive, default: true)",
                             },
                         },
                         "required": ["viz_type"],
@@ -653,7 +658,8 @@ class NotionHealthMCPServer:
                 Tool(
                     name="open_brain_visualization",
                     description=(
-                        "Open a previously generated brain visualization file in the default browser "
+                        "Open a previously generated brain visualization file"
+                        " in the default browser "
                         "or OS viewer. Pass the file path returned by any predict_brain_* or "
                         "generate_brain_visualization tool."
                     ),
@@ -662,7 +668,7 @@ class NotionHealthMCPServer:
                         "properties": {
                             "path": {
                                 "type": "string",
-                                "description": "Absolute path to the visualization file (.html, .png, .gif, .mp4)",
+                                "description": "Absolute path to the file (.html/.png/.gif/.mp4)",
                             },
                         },
                         "required": ["path"],

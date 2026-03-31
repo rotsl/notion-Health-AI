@@ -12,19 +12,14 @@ Reference: https://ai.meta.com/blog/tribe-v2-brain-predictive-foundation-model/
 """
 
 import os
-import json
-import asyncio
-from datetime import datetime, date, timedelta
-from typing import Optional, List, Dict, Any, Tuple
-from dataclasses import dataclass, field
+from typing import Optional, List, Dict, Any
+from dataclasses import dataclass
 from enum import Enum
-import logging
 from loguru import logger
 
 # Try to import torch for actual model inference
 try:
     import torch
-    import torch.nn.functional as F
 
     TORCH_AVAILABLE = True
 except ImportError:
@@ -1091,7 +1086,10 @@ class TribeHealthAnalyzer:
         except ValueError:
             return {
                 "success": False,
-                "error": f"Unknown activity type: {activity}. Valid types: {[a.value for a in ActivityType]}",
+                "error": (
+                    f"Unknown activity type: {activity}. "
+                    f"Valid types: {[a.value for a in ActivityType]}"
+                ),
             }
 
         # Get activity pattern
@@ -1267,7 +1265,10 @@ class TribeHealthAnalyzer:
                     health_metric="Sleep Hours",
                     brain_region=BrainRegion.HIPPOCAMPUS,
                     correlation_strength=0.75 if sleep_quality >= 0.8 else 0.5,
-                    insight="Quality sleep enhances hippocampal memory consolidation and glymphatic clearance",
+                    insight=(
+                        "Quality sleep enhances hippocampal memory"
+                        " consolidation and glymphatic clearance"
+                    ),
                     confidence=0.85,
                 )
             )
@@ -1276,7 +1277,10 @@ class TribeHealthAnalyzer:
                     health_metric="Sleep Hours",
                     brain_region=BrainRegion.PREFRONTAL_CORTEX,
                     correlation_strength=0.70 if sleep_quality >= 0.8 else 0.45,
-                    insight="Adequate sleep restores prefrontal cortex function for better decision-making",
+                    insight=(
+                        "Adequate sleep restores prefrontal cortex function"
+                        " for better decision-making"
+                    ),
                     confidence=0.80,
                 )
             )
@@ -1314,7 +1318,10 @@ class TribeHealthAnalyzer:
                     brain_region=BrainRegion.AMYGDALA,
                     correlation_strength=-0.55
                     + (mood_factor * 0.3),  # Negative correlation with negative mood
-                    insight="Better mood associated with balanced amygdala activity and emotional regulation",
+                    insight=(
+                        "Better mood associated with balanced amygdala activity"
+                        " and emotional regulation"
+                    ),
                     confidence=0.75,
                 )
             )
@@ -1500,7 +1507,11 @@ class TribeHealthAnalyzer:
             "schedule": {
                 "slots": schedule_slots,
                 "score": 9.2,
-                "notes": "This schedule optimizes brain function by aligning activities with natural circadian rhythms and neural energy patterns. Adjust based on your chronotype (morning vs evening preference).",
+                "notes": (
+                    "This schedule optimizes brain function by aligning activities"
+                    " with natural circadian rhythms and neural energy patterns."
+                    " Adjust based on your chronotype (morning vs evening preference)."
+                ),
             },
         }
 
@@ -1547,7 +1558,7 @@ class TribeHealthAnalyzer:
             raw_preds:      numpy array (n_timesteps, n_vertices) or (n_vertices,)
             title:          Shared title for all plots
             stem:           Filename prefix
-            viz_types:      List of requested types: "interactive", "static", "gif", "mp4", "heatmap"
+            viz_types:      Requested types: "interactive", "static", "gif", "mp4", "heatmap"
             modality:       Label for the ROI heatmap subtitle
             roi_activations: ``{region: activation_value}`` for the heatmap
 
@@ -1786,7 +1797,9 @@ class TribeHealthAnalyzer:
         if not modalities_used:
             return {
                 "success": False,
-                "error": "At least one of video_path, audio_path, or text_stimulus must be provided",
+                "error": (
+                    "At least one of video_path, audio_path, or text_stimulus must be provided"
+                ),
             }
 
         roi_dict = await self.model_wrapper.predict_multimodal(

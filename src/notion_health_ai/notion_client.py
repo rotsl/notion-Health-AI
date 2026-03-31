@@ -7,7 +7,7 @@ handling all API calls and data transformations.
 
 import os
 from datetime import datetime, date, timedelta
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict
 import httpx
 from loguru import logger
 
@@ -718,8 +718,6 @@ class NotionClient:
 
     async def create_brain_analysis(self, database_id: str, session: BrainAnalysisSession) -> str:
         """Create a brain analysis session record in Notion."""
-        import json as _json
-
         label = f"Brain Analysis — {session.session_date} ({session.input_type})"
         properties = {
             "Name": {"title": [{"text": {"content": label}}]},
