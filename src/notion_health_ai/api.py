@@ -82,10 +82,22 @@ def _apply_hf_token(hf_token: Optional[str]) -> bool:
     if not token:
         return _has_server_hf_token()
 
-    # Support both naming conventions used by HF tooling and this project.
+    # Set all three env var names used by huggingface_hub across versions.
     os.environ["HUGGING_FACE_TOKEN"] = token
     os.environ["HF_TOKEN"] = token
+    os.environ["HUGGINGFACE_HUB_TOKEN"] = token
     return True
+
+
+def _hf_login(token: str) -> None:
+    """Call huggingface_hub.login() so the credential cache is populated before any download."""
+    try:
+        from huggingface_hub import login as _login
+
+        _login(token=token, add_to_git_credential=False)
+        logger.info("HuggingFace login successful")
+    except Exception as e:
+        logger.warning(f"HuggingFace login warning (non-fatal): {e}")
 
 
 async def _ensure_tribe_ready(hf_token: Optional[str] = None):
@@ -98,6 +110,10 @@ async def _ensure_tribe_ready(hf_token: Optional[str] = None):
 
     # If previously initialized in simulation mode, try loading real weights once token is present.
     if has_token and not tribe.model_wrapper.is_loaded:
+        # Authenticate with HuggingFace *before* load_model() attempts any download.
+        token = (os.environ.get("HUGGING_FACE_TOKEN") or os.environ.get("HF_TOKEN") or "").strip()
+        if token:
+            _hf_login(token)
         cache_dir = str(PROJECT_ROOT / "cache" / "tribev2")
         loaded = await tribe.model_wrapper.load_model(cache_dir=cache_dir)
         if loaded:

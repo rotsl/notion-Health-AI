@@ -206,18 +206,18 @@ class TribeModelWrapper:
 
             os.makedirs(cache_dir, exist_ok=True)
 
-            # Authenticate with HuggingFace so gated model weights can be downloaded.
-            hf_token = os.getenv("HUGGING_FACE_TOKEN") or os.getenv("HF_TOKEN")
-            if hf_token:
-                try:
-                    from huggingface_hub import login as _hf_login
-
-                    _hf_login(token=hf_token, add_to_git_credential=False)
-                    logger.info("Authenticated with HuggingFace using HUGGING_FACE_TOKEN")
-                except Exception as _login_err:
-                    logger.warning(f"HuggingFace login warning (non-fatal): {_login_err}")
-            else:
-                logger.warning("No HUGGING_FACE_TOKEN found — download of gated model may fail")
+            # HuggingFace auth is handled by the caller (_ensure_tribe_ready in api.py)
+            # which calls huggingface_hub.login() and sets all three token env vars
+            # (HUGGING_FACE_TOKEN, HF_TOKEN, HUGGINGFACE_HUB_TOKEN) before this runs.
+            hf_token = (
+                os.getenv("HUGGING_FACE_TOKEN")
+                or os.getenv("HF_TOKEN")
+                or os.getenv("HUGGINGFACE_HUB_TOKEN")
+            )
+            if not hf_token:
+                logger.warning(
+                    "No HuggingFace token in environment — download of gated model may fail"
+                )
 
             logger.info(f"Loading TRIBEv2 model from HuggingFace: {self.MODEL_NAME}")
             logger.info("First run will download ~676 MB checkpoint...")
