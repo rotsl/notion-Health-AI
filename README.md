@@ -15,7 +15,9 @@ NotionHealth AI is a local-first health tracker for Notion. You run it on your o
 
 The project covers day-to-day health logging, summaries, goals, symptoms, appointments, AI-written insights, and optional TRIBEv2 brain analysis. If TRIBEv2 is not installed, the rest of the app still works and the brain features fall back to simulation mode.
 
-Consult a qualified health professional for medical advice, diagnosis, or treatment.
+https://github.com/user-attachments/assets/0add8628-bd76-4b43-afd9-b8e483e4967e
+
+> ⚠️ Consult a qualified health professional for medical advice, diagnosis, or treatment.
 
 ## What you need
 
