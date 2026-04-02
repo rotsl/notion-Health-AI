@@ -1,0 +1,49 @@
+# Core dependencies
+notion-client>=2.2.1
+mcp>=1.0.0
+anthropic>=0.25.0
+openai>=1.12.0
+google-generativeai>=0.8.0
+httpx>=0.27.0
+aiohttp>=3.9.0
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+python-multipart>=0.0.9
+aiofiles>=23.2.1
+pydantic>=2.6.0
+pandas>=2.2.0
+# Pinned for TRIBEv2 compatibility — torch 2.5.1 requires numpy <2.3
+numpy==2.2.6
+python-dateutil>=2.8.2
+rich>=13.7.0
+click>=8.1.7
+questionary>=2.0.1
+python-dotenv>=1.0.0
+pyyaml>=6.0.1
+toml>=0.10.2
+loguru>=0.7.2
+validators>=0.22.0
+
+# HuggingFace — required for gated model download
+huggingface_hub>=0.23.0
+
+# TRIBEv2 dependencies
+# Install torch/torchvision separately if you need platform-specific wheels.
+# whisperx provides audio transcription in the TRIBEv2 text pipeline.
+whisperx
+
+# Brain visualization
+plotly>=5.18.0
+nilearn>=0.10.0
+nibabel>=5.1.0
+imageio[ffmpeg]>=2.33.0
+
+# Development
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+pytest-cov>=4.1.0
+black>=24.1.0
+flake8>=7.0.0
+mypy>=1.8.0
+isort>=5.13.0
+pre-commit>=3.6.0

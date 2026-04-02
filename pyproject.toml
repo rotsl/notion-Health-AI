@@ -1,0 +1,203 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Rohan R
+# Author: Rohan R
+
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "notion-health-ai"
+version = "2.0.0"
+description = "Personal health tracking for Notion with MCP tools, a web UI, and optional TRIBEv2 brain prediction"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Rohan R"}
+]
+maintainers = [
+    {name = "Rohan R"}
+]
+keywords = [
+    "notion",
+    "mcp",
+    "health",
+    "wellness",
+    "ai",
+    "tracking",
+    "medical",
+    "fitness",
+    "tribe",
+    "brain",
+    "neuroscience",
+    "fmri"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Environment :: Web Environment",
+    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: Healthcare Industry",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Health :: Medical",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Neuroscience",
+    "Topic :: Office/Business :: Scheduling",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "notion-client>=2.2.1",
+    "mcp>=1.0.0",
+    "anthropic>=0.25.0",
+    "openai>=1.12.0",
+    "google-generativeai>=0.8.0",
+    "huggingface_hub>=0.23.0",
+    "httpx>=0.27.0",
+    "aiohttp>=3.9.0",
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.27.0",
+    "python-multipart>=0.0.9",
+    "aiofiles>=23.2.1",
+    "pydantic>=2.6.0",
+    "pandas>=2.2.0",
+    "numpy>=1.26.0",  # use numpy==2.2.6 with TRIBEv2 (see optional-dependencies.tribev2)
+    "python-dateutil>=2.8.2",
+    "rich>=13.7.0",
+    "click>=8.1.7",
+    "questionary>=2.0.1",
+    "python-dotenv>=1.0.0",
+    "pyyaml>=6.0.1",
+    "toml>=0.10.2",
+    "loguru>=0.7.2",
+    "validators>=0.22.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.1.0",
+    "black>=24.1.0",
+    "flake8>=7.0.0",
+    "mypy>=1.8.0",
+    "isort>=5.13.0",
+    "pre-commit>=3.6.0",
+]
+web = [
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.27.0",
+    "python-multipart>=0.0.9",
+    "aiofiles>=23.2.1",
+]
+tribev2 = [
+    "torch==2.5.1",
+    "torchvision==0.20.1",
+    "torchaudio==2.5.1",
+    "numpy==2.2.6",
+    "whisperx",
+]
+
+[project.scripts]
+notion-health = "notion_health_ai.cli:main"
+notion-health-mcp = "notion_health_ai.server:main"
+notion-health-api = "notion_health_ai.api:main"
+
+[project.urls]
+Homepage = "https://github.com/rotsl/notion-Health-AI"
+Documentation = "https://github.com/rotsl/notion-Health-AI#readme"
+Repository = "https://github.com/rotsl/notion-Health-AI.git"
+Issues = "https://github.com/rotsl/notion-Health-AI/issues"
+Changelog = "https://github.com/rotsl/notion-Health-AI/blob/main/CHANGELOG.md"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["notion_health_ai*"]
+
+[tool.setuptools.package-data]
+"notion_health_ai" = ["py.typed"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | venv
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 100
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+strict_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = [
+    "notion_client.*",
+    "mcp.*",
+    "anthropic.*",
+    "openai.*",
+    "google.generativeai.*",
+    "torch.*",
+    "torchvision.*",
+    "tribev2.*",
+    "whisperx.*",
+    "huggingface_hub.*",
+    "nilearn.*",
+    "nibabel.*",
+    "plotly.*",
+    "imageio.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra -q"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+source = ["src/notion_health_ai"]
+omit = ["tests/*", "*/__pycache__/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]

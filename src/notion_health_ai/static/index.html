@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NotionHealth AI</title>
+<style>
+:root {
+  --bg: #0d1117; --surface: #161b22; --surface2: #21262d;
+  --border: #30363d; --text: #e6edf3; --muted: #8b949e;
+  --accent: #58a6ff; --purple: #bc8cff; --green: #3fb950;
+  --yellow: #d29922; --red: #f85149; --orange: #e3b341;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* ── Header ── */
+header {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 12px 24px; display: flex; align-items: center; gap: 12px;
+  position: sticky; top: 0; z-index: 100;
+}
+.logo { font-size: 18px; font-weight: 700; white-space: nowrap; }
+.status-bar { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+.sdot {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; padding: 3px 9px; border-radius: 12px;
+  background: var(--surface2); border: 1px solid var(--border); white-space: nowrap;
+}
+.sdot.ok { border-color: var(--green); color: var(--green); }
+.sdot.warn { border-color: var(--yellow); color: var(--yellow); }
+.sdot.err { border-color: var(--red); color: var(--red); }
+.icon-btn {
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text); padding: 6px 12px; border-radius: 6px; cursor: pointer;
+  font-size: 13px; white-space: nowrap;
+}
+.icon-btn:hover { background: var(--border); }
+
+/* ── Settings overlay ── */
+.overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.75); z-index: 200;
+  justify-content: center; align-items: center;
+}
+.overlay.open { display: flex; }
+.panel {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 28px; width: 460px; max-height: 90vh;
+  overflow-y: auto;
+}
+.panel h2 { font-size: 16px; margin-bottom: 18px; }
+
+/* ── Form elements ── */
+.fg { margin-bottom: 14px; }
+.fg label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+.fg input, .fg select, .fg textarea {
+  width: 100%; background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text); padding: 7px 11px; border-radius: 6px; font-size: 13px; outline: none;
+  font-family: inherit;
+}
+.fg input:focus, .fg select:focus, .fg textarea:focus { border-color: var(--accent); }
+textarea { resize: vertical; }
+
+/* ── Buttons ── */
+.btn {
+  background: var(--accent); color: #0d1117; border: none;
+  padding: 8px 16px; border-radius: 6px; cursor: pointer;
+  font-size: 13px; font-weight: 600;
+}
+.btn:hover { opacity: .85; }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn.sec { background: var(--surface2); color: var(--text); border: 1px solid var(--border); font-weight: 400; }
+.btn.sec:hover { background: var(--border); }
+.btn.lg { padding: 10px 22px; font-size: 14px; }
+
+/* ── Tabs ── */
+.tabs {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0 24px; display: flex; gap: 2px; overflow-x: auto;
+}
+.tab {
+  background: none; border: none; color: var(--muted); padding: 11px 14px;
+  cursor: pointer; font-size: 13px; border-bottom: 2px solid transparent;
+  white-space: nowrap;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--text); border-bottom-color: var(--accent); }
+
+/* ── Content ── */
+.content { max-width: 1080px; margin: 0 auto; padding: 20px; }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+/* ── Cards ── */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 18px; margin-bottom: 14px;
+}
+.card-title {
+  font-size: 10px; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--muted); margin-bottom: 12px; font-weight: 600;
+}
+
+/* ── Mode selector ── */
+.modes { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+.mode {
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--muted); padding: 7px 14px; border-radius: 6px; cursor: pointer; font-size: 13px;
+}
+.mode.active { background: var(--accent); border-color: var(--accent); color: #0d1117; font-weight: 600; }
+
+/* ── Dropzone ── */
+.drop {
+  border: 2px dashed var(--border); border-radius: 8px;
+  padding: 32px; text-align: center; cursor: pointer; color: var(--muted);
+  transition: border-color .15s;
+}
+.drop:hover, .drop.over { border-color: var(--accent); color: var(--text); }
+.fname { margin-top: 6px; font-size: 12px; color: var(--green); }
+
+/* ── Viz checkboxes ── */
+.vcopts { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 12px; }
+.vcopt { display: flex; align-items: center; gap: 5px; font-size: 12px; cursor: pointer; }
+
+/* ── Loading ── */
+.loading { display: none; text-align: center; padding: 36px; color: var(--muted); }
+.loading.show { display: block; }
+.spin {
+  width: 38px; height: 38px; border: 3px solid var(--border);
+  border-top-color: var(--accent); border-radius: 50%;
+  animation: spin 1s linear infinite; margin: 0 auto 14px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── ROI table ── */
+.rtable { width: 100%; border-collapse: collapse; font-size: 13px; }
+.rtable th {
+  background: var(--surface2); text-align: left; padding: 7px 11px;
+  font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
+}
+.rtable td { padding: 7px 11px; border-bottom: 1px solid var(--border); }
+.rtable tr:last-child td { border-bottom: none; }
+.bar { height: 7px; background: var(--border); border-radius: 4px; width: 100px; display: inline-block; vertical-align: middle; }
+.bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--purple)); border-radius: 4px; }
+
+/* ── Viz output ── */
+.hmap { max-width: 100%; border-radius: 8px; margin-top: 10px; }
+.brwrap { width: 100%; height: 580px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); margin-top: 10px; }
+.brwrap iframe { width: 100%; height: 100%; border: none; }
+.vzlinks { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.vzlink {
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--accent); padding: 4px 11px; border-radius: 5px;
+  text-decoration: none; font-size: 12px;
+}
+.vzlink:hover { background: var(--border); }
+
+/* ── Alert ── */
+.alert { padding: 10px 14px; border-radius: 6px; font-size: 12px; margin: 10px 0; }
+.alert.ok { background: rgba(63,185,80,.1); border: 1px solid var(--green); color: var(--green); }
+.alert.err { background: rgba(248,81,73,.1); border: 1px solid var(--red); color: var(--red); }
+.alert.info { background: rgba(88,166,255,.1); border: 1px solid var(--accent); color: var(--accent); }
+.alert.warn { background: rgba(210,153,34,.1); border: 1px solid var(--yellow); color: var(--yellow); }
+
+/* ── Form grid ── */
+.fgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
+
+/* ── Wellness ── */
+.wscore { display: inline-flex; align-items: baseline; gap: 3px; }
+.wscore .n { font-size: 30px; font-weight: 700; color: var(--accent); }
+.wscore .d { font-size: 13px; color: var(--muted); }
+
+/* ── Insight card ── */
+.icard { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 10px; }
+.icat { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--purple); margin-bottom: 5px; }
+.itext { font-size: 13px; line-height: 1.6; }
+
+/* ── Viz gallery ── */
+.vgallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.vcard { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; }
+.vname { font-size: 11px; color: var(--muted); margin-bottom: 6px; word-break: break-all; }
+.vbadge { font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 600; }
+.vbadge.html { background: rgba(88,166,255,.15); color: var(--accent); }
+.vbadge.png  { background: rgba(63,185,80,.15); color: var(--green); }
+.vbadge.gif  { background: rgba(188,140,255,.15); color: var(--purple); }
+.vbadge.mp4  { background: rgba(227,179,65,.15); color: var(--orange); }
+
+/* ── Row util ── */
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.ml { margin-left: auto; }
+
+/* ── Token estimates ── */
+.tok { display:flex; align-items:center; gap:7px; margin-top:6px; font-size:11px; color:var(--muted); flex-wrap:wrap; }
+.tbadge { padding:2px 8px; border-radius:10px; font-size:10px; font-weight:700; white-space:nowrap; }
+.tbadge.low { background:rgba(63,185,80,.15); color:var(--green); }
+.tbadge.mid { background:rgba(210,153,34,.15); color:var(--yellow); }
+.tbadge.hi  { background:rgba(248,81,73,.15);  color:var(--red); }
+.tcost { font-size:10px; color:var(--muted); }
+.tok-notion { background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:8px 12px; font-size:11px; margin-top:8px; }
+.tok-notion td { padding:2px 10px 2px 0; }
+.tok-notion td:first-child { color:var(--muted); }
+.tok-notion td:last-child { font-weight:600; }
+</style>
+</head>
+<body>
+
+<!-- ═════════════ HEADER ═════════════ -->
+<header>
+  <div class="logo">🧠 NotionHealth AI</div>
+  <div class="status-bar">
+    <span class="sdot" id="st-notion">⚫ Notion</span>
+    <span class="sdot" id="st-ai">⚫ AI</span>
+    <span class="sdot" id="st-tribe">⚫ TRIBEv2</span>
+  </div>
+  <button class="icon-btn" onclick="openSettings()">⚙️ Settings</button>
+</header>
+
+<div class="content" style="padding-top:12px;padding-bottom:0">
+  <div class="alert warn" style="margin-bottom:0">
+    Consult a qualified health professional for medical advice, diagnosis, or treatment.
+  </div>
+</div>
+
+<!-- ═════════════ SETTINGS OVERLAY ═════════════ -->
+<div class="overlay" id="ov" onclick="if(event.target===this)closeSettings()">
+  <div class="panel">
+    <div class="row" style="margin-bottom:16px">
+      <h2>⚙️ API Configuration</h2>
+      <button class="btn sec ml" onclick="closeSettings()">✕</button>
+    </div>
+
+    <div class="alert info" style="margin-bottom:14px">
+      Keys are stored in your browser session only — never sent to third parties.
+    </div>
+
+    <div class="fg">
+      <label>Notion Integration Token *</label>
+      <input id="s-notion" type="password" placeholder="ntn_... or secret_...">
+    </div>
+
+    <div class="fg">
+      <label>AI Provider</label>
+      <select id="s-provider" onchange="updatePlaceholder()">
+        <option value="anthropic">Claude (Anthropic)</option>
+        <option value="openai">GPT-4o (OpenAI)</option>
+        <option value="gemini">Gemini 2.0 Flash (Google)</option>
+      </select>
+    </div>
+
+    <div class="fg">
+      <label>AI API Key</label>
+      <input id="s-aikey" type="password" placeholder="sk-ant-...">
+    </div>
+
+    <div class="fg">
+      <label>HuggingFace Token (TRIBEv2 real brain predictions)</label>
+      <div id="hf-msg" class="alert info" style="padding:7px 11px">Checking server...</div>
+      <input id="s-hf" type="password" placeholder="hf_... (leave blank to use server env var)">
+    </div>
+
+    <button class="btn" style="width:100%" onclick="saveSettings()">💾 Save & Connect</button>
+    <div id="s-result"></div>
+  </div>
+</div>
+
+<!-- ═════════════ TABS ═════════════ -->
+<nav class="tabs">
+  <button class="tab active" onclick="switchTab('brain',this)">🧠 Brain Predict</button>
+  <button class="tab" onclick="switchTab('health',this)">💊 Health Log</button>
+  <button class="tab" onclick="switchTab('insights',this)">💡 AI Insights</button>
+  <button class="tab" onclick="switchTab('gallery',this)">📊 Visualizations</button>
+</nav>
+
+<div class="content">
+
+<!-- ═════════════ BRAIN PREDICT ═════════════ -->
+<div id="brain-pane" class="tab-pane active">
+
+  <div class="card">
+    <div class="card-title">Input Modality</div>
+    <div class="modes">
+      <button class="mode active" onclick="setMode('text',this)">📝 Text</button>
+      <button class="mode" onclick="setMode('audio',this)">🎙️ Audio</button>
+      <button class="mode" onclick="setMode('video',this)">🎥 Video</button>
+      <button class="mode" onclick="setMode('multi',this)">🔀 Multimodal</button>
+    </div>
+
+    <!-- Text -->
+    <div id="m-text">
+      <div class="fg">
+        <label>Health narrative / activity description (≥20 words for accurate results)</label>
+        <textarea id="txt" rows="4" oninput="tokEstText(); scheduleDurationOptions()" placeholder="e.g. I went for a 30 minute run this morning, feeling energised and focused throughout. My heart rate peaked at 145 bpm and I felt a strong runner's high afterwards with elevated mood and clear thinking."></textarea>
+        <div class="tok" id="tok-txt">
+          <span class="tbadge low" id="tok-txt-n">— tokens</span>
+          <span class="tcost" id="tok-txt-cost"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Audio -->
+    <div id="m-audio" style="display:none">
+      <div class="drop" id="drop-audio"
+           onclick="document.getElementById('f-audio').click()"
+           ondragover="dov(event,'drop-audio')" ondragleave="dlv('drop-audio')" ondrop="dop(event,'audio')">
+        <div>🎙️ Drop audio file or click to upload</div>
+        <div style="font-size:11px;margin-top:5px;color:var(--muted)">mp3 · wav · flac · ogg · m4a</div>
+        <div class="fname" id="fn-audio"></div>
+      </div>
+      <input type="file" id="f-audio" accept="audio/*" style="display:none" onchange="tokEstFile('audio')">
+      <div class="tok" id="tok-audio" style="display:none">
+        <span class="tbadge low" id="tok-audio-n">— tokens</span>
+        <span class="tcost" id="tok-audio-cost"></span>
+        <span style="color:var(--muted);font-size:10px">(transcription estimate)</span>
+      </div>
+    </div>
+
+    <!-- Video -->
+    <div id="m-video" style="display:none">
+      <div class="drop" id="drop-video"
+           onclick="document.getElementById('f-video').click()"
+           ondragover="dov(event,'drop-video')" ondragleave="dlv('drop-video')" ondrop="dop(event,'video')">
+        <div>🎥 Drop video file or click to upload</div>
+        <div style="font-size:11px;margin-top:5px;color:var(--muted)">mp4 · mov · avi · webm · mkv</div>
+        <div class="fname" id="fn-video"></div>
+      </div>
+      <input type="file" id="f-video" accept="video/*" style="display:none" onchange="tokEstFile('video')">
+      <div class="tok" id="tok-video" style="display:none">
+        <span class="tbadge low" id="tok-video-n">— tokens</span>
+        <span class="tcost" id="tok-video-cost"></span>
+        <span style="color:var(--muted);font-size:10px">(audio transcription + visual context estimate)</span>
+      </div>
+    </div>
+
+    <!-- Multimodal -->
+    <div id="m-multi" style="display:none">
+      <div class="fg">
+        <label>Text (optional)</label>
+        <textarea id="mm-txt" rows="2" oninput="scheduleDurationOptions()" placeholder="Optional narration..."></textarea>
+      </div>
+      <div class="fg">
+        <label>Audio file (optional)</label>
+        <div class="drop" style="padding:14px" onclick="document.getElementById('mm-audio').click()">
+          🎙️ Upload audio &nbsp;<span class="fname" id="mm-aname"></span>
+        </div>
+        <input type="file" id="mm-audio" accept="audio/*" style="display:none"
+               onchange="document.getElementById('mm-aname').textContent=this.files[0]?.name||''">
+      </div>
+      <div class="fg">
+        <label>Video file (optional)</label>
+        <div class="drop" style="padding:14px" onclick="document.getElementById('mm-video').click()">
+          🎥 Upload video &nbsp;<span class="fname" id="mm-vname"></span>
+        </div>
+        <input type="file" id="mm-video" accept="video/*" style="display:none"
+               onchange="document.getElementById('mm-vname').textContent=this.files[0]?.name||''">
+      </div>
+    </div>
+
+    <div class="fg" id="sim-duration-wrap">
+      <label>Simulation Duration</label>
+      <div id="dur-help" class="alert info" style="margin-bottom:10px">
+        Pick a realistic duration before running TRIBEv2. Connected Notion timings appear here when available.
+      </div>
+      <div class="row">
+        <select id="dur-source" onchange="renderDurationControls()">
+          <option value="activity">Activity-based estimate</option>
+        </select>
+        <select id="dur-choice" onchange="renderDurationControls()"></select>
+        <input
+          id="dur-custom"
+          type="number"
+          min="5"
+          max="240"
+          step="5"
+          placeholder="Custom minutes"
+          style="display:none;max-width:150px"
+        >
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:8px" id="dur-note">
+        Use realistic session lengths only. Unrealistic values are blocked by the API.
+      </div>
+    </div>
+
+    <!-- Viz options -->
+    <div class="card-title" style="margin-top:14px">Visualization Types</div>
+    <div class="vcopts">
+      <label class="vcopt"><input type="checkbox" id="vt-int" checked> 3D Interactive HTML</label>
+      <label class="vcopt"><input type="checkbox" id="vt-heat" checked> ROI Heatmap PNG</label>
+      <label class="vcopt"><input type="checkbox" id="vt-static"> Static 4-view PNG</label>
+      <label class="vcopt"><input type="checkbox" id="vt-gif"> Animated GIF</label>
+    </div>
+
+    <div style="margin-top:16px" class="row">
+      <button class="btn lg" id="predict-btn" onclick="predict()">🔮 Predict Brain Response</button>
+      <div class="tok" id="tok-predict" style="margin:0">
+        <span class="tbadge low" id="tok-predict-n" style="display:none">— tokens</span>
+        <span class="tcost" id="tok-predict-cost"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" id="brain-load">
+    <div class="spin"></div>
+    <div id="load-msg" style="font-size:14px">Running TRIBEv2 prediction…</div>
+    <div style="font-size:11px;color:var(--muted);margin-top:6px">LLaMA 3.2 encoding → TTS → Whisper alignment → 20,484 fMRI vertex prediction</div>
+    <div style="font-size:11px;color:var(--muted);margin-top:3px">First run: ~2–3 min (cached after). Subsequent: ~30s.</div>
+  </div>
+
+  <!-- Results -->
+  <div id="brain-res" style="display:none">
+    <div class="card">
+      <div class="row">
+        <div id="model-badge" class="alert info" style="margin:0;display:inline-block"></div>
+        <div class="ml">
+          <div class="wscore">
+            <span class="n" id="wscore">—</span>
+            <span class="d">/10 wellness</span>
+          </div>
+        </div>
+      </div>
+      <div id="duration-used" class="alert info" style="margin-top:10px;display:none"></div>
+      <div class="tok" id="tok-res" style="margin-top:10px;display:none">
+        Tokens used: <span class="tbadge low" id="tok-res-in">— in</span>
+        <span class="tbadge low" id="tok-res-out">— out</span>
+        <span class="tcost" id="tok-res-cost"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Brain Region Activations (sorted by activation)</div>
+      <table class="rtable">
+        <thead><tr><th>Brain Region</th><th>Activation</th><th>Level</th><th>Response</th></tr></thead>
+        <tbody id="roi-body"></tbody>
+      </table>
+    </div>
+
+    <div class="card" id="heat-card" style="display:none">
+      <div class="card-title">ROI Heatmap</div>
+      <img id="heat-img" class="hmap">
+    </div>
+
+    <div class="card" id="int-card" style="display:none">
+      <div class="row" style="margin-bottom:10px">
+        <div class="card-title" style="margin:0">Interactive 3D Brain Surface</div>
+        <a id="int-link" class="vzlink ml" target="_blank">↗ Full Screen</a>
+      </div>
+      <div class="brwrap"><iframe id="brain-frame" src=""></iframe></div>
+    </div>
+
+    <div class="card" id="extra-card" style="display:none">
+      <div class="card-title">Other Outputs</div>
+      <div class="vzlinks" id="extra-links"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═════════════ HEALTH LOG ═════════════ -->
+<div id="health-pane" class="tab-pane">
+  <div class="card">
+    <div class="card-title">Log Health Data</div>
+    <div class="fgrid">
+      <div class="fg"><label>Date</label><input type="date" id="h-date"></div>
+      <div class="fg"><label>Weight (lbs)</label><input type="number" id="h-weight" step=".1" placeholder="172.5"></div>
+      <div class="fg"><label>Sleep Hours</label><input type="number" id="h-sleep" step=".5" min="0" max="24" placeholder="7.5"></div>
+      <div class="fg"><label>Sleep Quality (1–10)</label><input type="number" id="h-slq" min="1" max="10" placeholder="7"></div>
+      <div class="fg"><label>Mood (1–10)</label><input type="number" id="h-mood" min="1" max="10" placeholder="8"></div>
+      <div class="fg"><label>Energy (1–10)</label><input type="number" id="h-energy" min="1" max="10" placeholder="7"></div>
+      <div class="fg"><label>Steps</label><input type="number" id="h-steps" placeholder="8500"></div>
+      <div class="fg"><label>Water Glasses</label><input type="number" id="h-water" placeholder="8"></div>
+      <div class="fg"><label>Exercise Type</label>
+        <select id="h-extype">
+          <option value="">None</option>
+          <option value="running">Running</option>
+          <option value="walking">Walking</option>
+          <option value="cycling">Cycling</option>
+          <option value="yoga">Yoga</option>
+          <option value="strength_training">Strength Training</option>
+          <option value="swimming">Swimming</option>
+          <option value="hiit">HIIT</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="fg"><label>Exercise Minutes</label><input type="number" id="h-exmin" placeholder="30"></div>
+      <div class="fg"><label>BP Systolic</label><input type="number" id="h-bps" placeholder="120"></div>
+      <div class="fg"><label>BP Diastolic</label><input type="number" id="h-bpd" placeholder="80"></div>
+      <div class="fg"><label>Heart Rate</label><input type="number" id="h-hr" placeholder="65"></div>
+    </div>
+    <div class="fg" style="margin-top:4px"><label>Notes</label><textarea id="h-notes" rows="2" placeholder="Any notes..."></textarea></div>
+    <div style="margin-top:12px">
+      <button class="btn" onclick="logHealth()">💾 Save to Notion</button>
+    </div>
+    <div id="h-result"></div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="margin-bottom:12px">
+      <div class="card-title" style="margin:0">Health Summary</div>
+      <select id="sum-days" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 9px;border-radius:5px;font-size:12px">
+        <option value="7">7 days</option>
+        <option value="14">14 days</option>
+        <option value="30">30 days</option>
+      </select>
+      <button class="btn sec" onclick="loadSummary()">📊 Load</button>
+    </div>
+    <div id="sum-res" style="color:var(--muted);font-size:13px">Click Load to fetch from Notion.</div>
+  </div>
+</div>
+
+<!-- ═════════════ AI INSIGHTS ═════════════ -->
+<div id="insights-pane" class="tab-pane">
+  <div class="card">
+    <div class="card-title">Generate AI Health Insights</div>
+    <div class="row" style="margin-bottom:14px;flex-wrap:wrap">
+      <div class="fg" style="margin:0">
+        <label style="display:block;margin-bottom:4px">Period</label>
+        <select id="i-period" onchange="tokEstInsights()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:5px;font-size:13px">
+          <option value="week">Past Week</option>
+          <option value="month">Past Month</option>
+        </select>
+      </div>
+      <div class="fg" style="margin:0">
+        <label style="display:block;margin-bottom:4px">Category</label>
+        <select id="i-cat" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:5px;font-size:13px">
+          <option value="overall">Overall Health</option>
+          <option value="sleep">Sleep</option>
+          <option value="exercise">Exercise</option>
+          <option value="mood">Mood & Mental</option>
+          <option value="nutrition">Nutrition</option>
+        </select>
+      </div>
+      <button class="btn" onclick="getInsights()" style="align-self:flex-end">💡 Generate</button>
+    </div>
+    <div class="alert info" id="i-brain-note" style="display:none">
+      The latest brain simulation can be included as extra context for insights.
+    </div>
+    <label class="vcopt" id="i-brain-wrap" style="display:none;margin-bottom:10px">
+      <input type="checkbox" id="i-include-brain" checked> Include latest brain simulation context
+    </label>
+    <div class="tok" id="tok-ins" style="margin-bottom:12px">
+      Estimated: <span class="tbadge low" id="tok-ins-n">— tokens</span>
+      <span class="tcost" id="tok-ins-cost"></span>
+      <span style="color:var(--muted);font-size:10px">(health records + system prompt)</span>
+    </div>
+    <div class="tok-notion">
+      <table><tbody>
+        <tr><td>Health Metrics DB</td><td id="db-health-est">—</td></tr>
+        <tr><td>Medications DB</td><td id="db-med-est">—</td></tr>
+        <tr><td>Symptoms DB</td><td id="db-sym-est">—</td></tr>
+        <tr><td>System prompt + formatting</td><td>~600 tokens</td></tr>
+      </tbody></table>
+    </div>
+    <div class="loading" id="ins-load"><div class="spin"></div><div>Generating with AI...</div></div>
+    <div id="ins-res" style="color:var(--muted);font-size:13px">Select options above and click Generate.</div>
+    <div class="tok" id="tok-ins-actual" style="margin-top:10px;display:none">
+      Actual usage: <span class="tbadge low" id="tok-ins-in">—</span> in /
+      <span class="tbadge low" id="tok-ins-out">—</span> out ·
+      <span class="tcost" id="tok-ins-actual-cost"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ═════════════ VIZ GALLERY ═════════════ -->
+<div id="gallery-pane" class="tab-pane">
+  <div class="card">
+    <div class="row" style="margin-bottom:12px">
+      <div class="card-title" style="margin:0">Saved Visualizations</div>
+      <button class="btn sec" onclick="clearGallery()">🧹 Clear Saved Outputs</button>
+      <button class="btn sec ml" onclick="loadGallery()">🔄 Refresh</button>
+    </div>
+    <div id="vgallery" class="vgallery">
+      <div style="color:var(--muted);font-size:13px">Click Refresh to load.</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+
+<script>
+// ══════════════════════════════════════
+// Settings
+// ══════════════════════════════════════
+function gs() { try { return JSON.parse(sessionStorage.getItem('nhai')||'{}'); } catch{return{};} }
+function ss(o) { sessionStorage.setItem('nhai', JSON.stringify(o)); }
+
+function openSettings() {
+  const s = gs();
+  document.getElementById('s-notion').value = s.notion||'';
+  document.getElementById('s-provider').value = s.provider||'anthropic';
+  document.getElementById('s-aikey').value = s.aikey||'';
+  document.getElementById('s-hf').value = s.hf||'';
+  updatePlaceholder();
+  document.getElementById('ov').classList.add('open');
+  checkStatus();
+}
+function closeSettings() { document.getElementById('ov').classList.remove('open'); }
+
+function updatePlaceholder() {
+  const p = document.getElementById('s-provider').value;
+  document.getElementById('s-aikey').placeholder =
+    {anthropic:'sk-ant-...', openai:'sk-...', gemini:'AIza...'}[p]||'';
+}
+
+function saveSettings() {
+  const s = {
+    notion: document.getElementById('s-notion').value.trim(),
+    provider: document.getElementById('s-provider').value,
+    aikey: document.getElementById('s-aikey').value.trim(),
+    hf: document.getElementById('s-hf').value.trim(),
+  };
+  ss(s);
+  document.getElementById('s-result').innerHTML = '<div class="alert ok">✅ Saved for this session.</div>';
+  updateStatusBar(s);
+  loadDurationOptions();
+}
+
+function hdrs(s) {
+  s = s || gs();
+  const h = {'Content-Type':'application/json'};
+  if (s.hf) h['X-HF-Token'] = s.hf;
+  if (s.notion) h['X-Notion-Key'] = s.notion;
+  if (s.provider) h['X-AI-Provider'] = s.provider;
+  if (s.aikey) h['X-AI-Key'] = s.aikey;
+  return h;
+}
+
+function authHdrs(s) {
+  s = s || gs();
+  const h = {};
+  if (s.hf) h['X-HF-Token'] = s.hf;
+  if (s.notion) h['X-Notion-Key'] = s.notion;
+  if (s.provider) h['X-AI-Provider'] = s.provider;
+  if (s.aikey) h['X-AI-Key'] = s.aikey;
+  return h;
+}
+
+async function fetchJson(url, opts) {
+  const res = await fetch(url, opts);
+  const raw = await res.text();
+  let data = null;
+  try {
+    data = raw ? JSON.parse(raw) : {};
+  } catch {
+    data = { success: false, error: raw || `HTTP ${res.status}` };
+  }
+  if (!res.ok) {
+    const msg = data?.error || data?.detail || `HTTP ${res.status}`;
+    throw new Error(msg);
+  }
+  return data;
+}
+
+// ══════════════════════════════════════
+// Status bar
+// ══════════════════════════════════════
+function setDot(id, label, cls) {
+  const el = document.getElementById(id);
+  el.textContent = label; el.className = `sdot ${cls}`;
+}
+function pLabel(p) { return {anthropic:'Claude',openai:'GPT-4o',gemini:'Gemini'}[p]||'AI'; }
+
+function updateStatusBar(s) {
+  s = s || gs();
+  setDot('st-notion', s.notion ? '🟢 Notion' : '🔴 Notion', s.notion?'ok':'err');
+  setDot('st-ai', s.aikey ? `🟢 ${pLabel(s.provider)}` : '🔴 AI', s.aikey?'ok':'err');
+}
+
+async function checkStatus() {
+  try {
+    const d = await fetchJson('/api/status', {headers: authHdrs(gs())});
+    const hfSet = d.features?.hf_token_set;
+    const loaded = d.features?.model_loaded;
+    let t='', c='';
+    if (loaded)     { t='🟢 TRIBEv2 Ready'; c='ok'; }
+    else if (hfSet) { t='🟡 TRIBEv2 Loading'; c='warn'; }
+    else            { t='🔴 TRIBEv2 Sim'; c='err'; }
+    setDot('st-tribe', t, c);
+    const hfEl = document.getElementById('hf-msg');
+    if (hfEl) {
+      if (hfSet) { hfEl.textContent='✅ HF token set on server — real TRIBEv2 predictions enabled'; hfEl.className='alert ok'; }
+      else       { hfEl.textContent='⚠️ No HF token on server — simulation mode. Set HUGGING_FACE_TOKEN env var.'; hfEl.className='alert warn'; }
+    }
+  } catch {
+    setDot('st-tribe', '🔴 API Down', 'err');
+  }
+  updateStatusBar();
+}
+
+// ══════════════════════════════════════
+// Tabs
+// ══════════════════════════════════════
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`${name}-pane`).classList.add('active');
+  btn.classList.add('active');
+  if (name==='gallery') loadGallery();
+}
+
+// ══════════════════════════════════════
+// Brain Predict — input mode
+// ══════════════════════════════════════
+let mode = 'text';
+let durationState = null;
+let durationFetchTimer = null;
+let lastBrainResult = null;
+
+function setMode(m, btn) {
+  mode = m;
+  ['text','audio','video','multi'].forEach(x=>{
+    const el=document.getElementById(`m-${x}`);
+    if(el) el.style.display = x===m ? '' : 'none';
+  });
+  document.getElementById('sim-duration-wrap').style.display =
+    (m === 'text' || m === 'multi') ? '' : 'none';
+  document.querySelectorAll('.mode').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  scheduleDurationOptions();
+}
+
+function dov(e,id) { e.preventDefault(); document.getElementById(id).classList.add('over'); }
+function dlv(id) { document.getElementById(id).classList.remove('over'); }
+function dop(e,t) {
+  e.preventDefault(); dlv(`drop-${t}`);
+  const f=e.dataTransfer?.files[0];
+  if(f){ const inp=document.getElementById(`f-${t}`); const dt=new DataTransfer(); dt.items.add(f); inp.files=dt.files; tokEstFile(t); }
+}
+
+function vtypes() {
+  const v=[];
+  if(document.getElementById('vt-int').checked) v.push('interactive');
+  if(document.getElementById('vt-heat').checked) v.push('heatmap');
+  if(document.getElementById('vt-static').checked) v.push('static');
+  if(document.getElementById('vt-gif').checked) v.push('gif');
+  return v;
+}
+
+function currentNarrativeText() {
+  if (mode === 'multi') return document.getElementById('mm-txt').value.trim();
+  return document.getElementById('txt').value.trim();
+}
+
+function uniqMinutes(values) {
+  return [...new Set(values.filter(Boolean))];
+}
+
+function scheduleDurationOptions() {
+  clearTimeout(durationFetchTimer);
+  durationFetchTimer = setTimeout(loadDurationOptions, 250);
+}
+
+async function loadDurationOptions() {
+  if (!['text', 'multi'].includes(mode)) return;
+  const s = gs();
+  const text = currentNarrativeText() || 'focus session';
+  try {
+    durationState = await fetchJson(
+      `/api/brain/duration-options?text=${encodeURIComponent(text)}&context_days=7`,
+      { headers: authHdrs(s) }
+    );
+    renderDurationControls();
+  } catch (e) {
+    durationState = null;
+    document.getElementById('dur-help').textContent = e.message;
+    document.getElementById('dur-help').className = 'alert warn';
+  }
+}
+
+function renderDurationControls() {
+  const sourceEl = document.getElementById('dur-source');
+  const choiceEl = document.getElementById('dur-choice');
+  const customEl = document.getElementById('dur-custom');
+  const helpEl = document.getElementById('dur-help');
+  const noteEl = document.getElementById('dur-note');
+  const datasetOpts = durationState?.dataset_options || [];
+  const profile = durationState?.activity_profile || {
+    min_minutes: 15,
+    max_minutes: 240,
+    preset_minutes: [25, 45, 60, 90],
+    suggested_minutes: 45,
+    label: 'Focused work or learning',
+    prompt: 'Choose a realistic duration before running TRIBEv2.',
+  };
+
+  const prevSource = sourceEl.value;
+  const prevChoice = choiceEl.value;
+  sourceEl.innerHTML = '<option value="activity">Activity-based estimate</option>';
+  if (datasetOpts.length) {
+    sourceEl.innerHTML += '<option value="dataset">Connected data timing</option>';
+  }
+  sourceEl.value = datasetOpts.length && prevSource === 'dataset' ? 'dataset' : 'activity';
+
+  if (sourceEl.value === 'dataset') {
+    choiceEl.innerHTML = datasetOpts
+      .map(opt => `<option value="${opt.minutes}">${opt.label}</option>`)
+      .join('');
+    customEl.style.display = 'none';
+    helpEl.textContent = durationState?.dataset_prompt || 'Choose one of your recent Notion durations.';
+    helpEl.className = 'alert ok';
+    noteEl.textContent = 'Dataset timing is locked to values already present in your connected records.';
+    return;
+  }
+
+  const activityOptions = uniqMinutes([
+    profile.explicit_minutes,
+    profile.suggested_minutes,
+    ...(profile.preset_minutes || []),
+  ]);
+  choiceEl.innerHTML = activityOptions
+    .map(minutes => `<option value="${minutes}">${minutes} min</option>`)
+    .join('') + '<option value="custom">Custom…</option>';
+  const keepCustom = prevChoice === 'custom';
+  const keepPreset = activityOptions.includes(parseInt(prevChoice, 10));
+  choiceEl.value = keepCustom
+    ? 'custom'
+    : keepPreset
+      ? prevChoice
+      : String(profile.suggested_minutes);
+  customEl.min = profile.min_minutes;
+  customEl.max = profile.max_minutes;
+  customEl.placeholder = `${profile.min_minutes}-${profile.max_minutes} min`;
+  customEl.style.display = choiceEl.value === 'custom' ? '' : 'none';
+  helpEl.textContent = profile.prompt;
+  helpEl.className = 'alert info';
+  noteEl.textContent =
+    `Suggested: ${profile.suggested_minutes} min. Allowed range: ${profile.min_minutes}-${profile.max_minutes} minutes.`;
+}
+
+function selectedDuration() {
+  const profile = durationState?.activity_profile;
+  const source = document.getElementById('dur-source').value;
+  const choice = document.getElementById('dur-choice').value;
+
+  if (source === 'dataset') {
+    return { source: 'dataset', minutes: parseInt(choice, 10) };
+  }
+
+  if (choice === 'custom') {
+    const customValue = parseInt(document.getElementById('dur-custom').value, 10);
+    if (!Number.isFinite(customValue)) {
+      throw new Error('Enter a custom duration before running TRIBEv2.');
+    }
+    if (profile && (customValue < profile.min_minutes || customValue > profile.max_minutes)) {
+      throw new Error(
+        `Choose a realistic duration between ${profile.min_minutes} and ${profile.max_minutes} minutes.`
+      );
+    }
+    return { source: 'activity', minutes: customValue };
+  }
+
+  return { source: 'activity', minutes: parseInt(choice, 10) };
+}
+
+async function predict() {
+  const s = gs();
+  const btn = document.getElementById('predict-btn');
+  document.getElementById('brain-res').style.display = 'none';
+  document.getElementById('brain-load').classList.add('show');
+  btn.disabled = true;
+
+  try {
+    let result;
+    const vt = vtypes();
+
+    if (mode === 'text') {
+      const text = document.getElementById('txt').value.trim();
+      if (!text) { alert('Please enter a health narrative.'); return; }
+      const duration = selectedDuration();
+      setMsg('Encoding with LLaMA 3.2 → TTS → Whisper → TRIBEv2 fMRI prediction…');
+      result = await fetch('/api/brain/text', {
+        method:'POST', headers:hdrs(s),
+        body: JSON.stringify({
+          text,
+          viz_types:vt,
+          context_days:7,
+          duration_minutes:duration.minutes,
+          duration_source:duration.source,
+        })
+      }).then(r=>r.json());
+
+    } else if (mode === 'audio') {
+      const f = document.getElementById('f-audio').files[0];
+      if (!f) { alert('Please select an audio file.'); return; }
+      setMsg('Processing audio: Wav2Vec-BERT + TRIBEv2 prediction…');
+      const fd=new FormData(); fd.append('file',f); fd.append('viz_types',vt.join(','));
+      result = await fetch('/api/brain/audio', {method:'POST', headers: authHdrs(s), body:fd}).then(r=>r.json());
+
+    } else if (mode === 'video') {
+      const f = document.getElementById('f-video').files[0];
+      if (!f) { alert('Please select a video file.'); return; }
+      setMsg('Processing video: V-JEPA2 + Wav2Vec-BERT + TRIBEv2 prediction…');
+      const fd=new FormData(); fd.append('file',f); fd.append('viz_types',vt.join(','));
+      result = await fetch('/api/brain/video', {method:'POST', headers: authHdrs(s), body:fd}).then(r=>r.json());
+
+    } else {
+      const mmTxt = document.getElementById('mm-txt').value.trim();
+      const mmAud = document.getElementById('mm-audio').files[0];
+      const mmVid = document.getElementById('mm-video').files[0];
+      if (!mmTxt && !mmAud && !mmVid) { alert('Provide at least one input.'); return; }
+      const duration = mmTxt ? selectedDuration() : null;
+      setMsg('Running multimodal TRIBEv2 prediction…');
+      const fd=new FormData();
+      if(mmTxt) fd.append('text',mmTxt);
+      if(mmAud) fd.append('audio_file',mmAud);
+      if(mmVid) fd.append('video_file',mmVid);
+      fd.append('viz_types',vt.join(','));
+      if (duration) {
+        fd.append('duration_minutes', String(duration.minutes));
+        fd.append('duration_source', duration.source);
+        fd.append('context_days', '7');
+      }
+      result = await fetch('/api/brain/multimodal', {method:'POST', headers: authHdrs(s), body:fd}).then(r=>r.json());
+    }
+
+    renderResult(result);
+
+  } catch(e) {
+    document.getElementById('brain-res').innerHTML = `<div class="alert err">Prediction failed: ${e.message}</div>`;
+    document.getElementById('brain-res').style.display = '';
+  } finally {
+    document.getElementById('brain-load').classList.remove('show');
+    btn.disabled = false;
+  }
+}
+
+function setMsg(m) { document.getElementById('load-msg').textContent = m; }
+
+function renderResult(data) {
+  if (!data || data.error || data.detail) {
+    document.getElementById('brain-res').innerHTML = `<div class="alert err">Error: ${data?.error||data?.detail||'Unknown'}</div>`;
+    document.getElementById('brain-res').style.display = '';
+    return;
+  }
+  lastBrainResult = data;
+  syncBrainInsightContext();
+  // Badge
+  const b = document.getElementById('model-badge');
+  if (data.model_used) { b.textContent='🧠 Real TRIBEv2 fMRI (20,484 cortical vertices, fsaverage5)'; b.className='alert ok'; }
+  else { b.textContent='⚡ Simulation (add HF token for real fMRI predictions)'; b.className='alert warn'; }
+  const durationEl = document.getElementById('duration-used');
+  if (data.duration_minutes) {
+    const src = data.duration_source === 'dataset' ? 'connected data timing' : 'activity estimate';
+    durationEl.textContent = `Simulation window: ${data.duration_minutes} minutes (${src}).`;
+    durationEl.style.display = '';
+  } else {
+    durationEl.style.display = 'none';
+  }
+  // Wellness
+  document.getElementById('wscore').textContent = (data.wellness_score||0).toFixed(1);
+  // ROI table
+  const tb = document.getElementById('roi-body');
+  tb.innerHTML = '';
+  const regs = data.brain_regions || {};
+  Object.entries(regs)
+    .map(([k,v])=>{ const a=typeof v==='object'?(v.activation_level??v.activation??0):v; return [k,v,a]; })
+    .sort((a,b)=>b[2]-a[2])
+    .forEach(([k,v,a])=>{
+      const pct = Math.round(a*100);
+      const rt = typeof v==='object'?(v.response_type??v.type??'neutral'):'neutral';
+      const col = a>.6?'var(--accent)':a>.4?'var(--yellow)':'var(--muted)';
+      tb.innerHTML += `<tr>
+        <td>${k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</td>
+        <td><span style="color:${col};font-weight:600">${pct}%</span></td>
+        <td><div class="bar"><div class="bar-fill" style="width:${pct}%"></div></div></td>
+        <td><span style="font-size:11px;color:var(--muted)">${rt}</span></td>
+      </tr>`;
+    });
+  // Visualizations
+  const vz = data.visualizations || {};
+  // Heatmap
+  if (vz.heatmap) {
+    document.getElementById('heat-img').src = vz.heatmap+'?t='+Date.now();
+    document.getElementById('heat-card').style.display='';
+  } else { document.getElementById('heat-card').style.display='none'; }
+  // Interactive
+  if (vz.interactive) {
+    document.getElementById('brain-frame').src = vz.interactive;
+    document.getElementById('int-link').href = vz.interactive;
+    document.getElementById('int-card').style.display='';
+  } else { document.getElementById('int-card').style.display='none'; }
+  // Extra
+  const extras = Object.entries(vz).filter(([k])=>!['heatmap','interactive'].includes(k)&&k);
+  if (extras.length) {
+    document.getElementById('extra-links').innerHTML = extras
+      .filter(([,u])=>u)
+      .map(([k,u])=>`<a href="${u}" target="_blank" class="vzlink">↗ ${k}</a>`).join('');
+    document.getElementById('extra-card').style.display='';
+  } else { document.getElementById('extra-card').style.display='none'; }
+
+  // Token usage (if API returned it)
+  if (data.token_usage) {
+    showActualTokens(data.token_usage, gs().provider, 'tok-res', 'tok-res-in', 'tok-res-out', 'tok-res-cost');
+  }
+
+  document.getElementById('brain-res').style.display='';
+}
+
+// ══════════════════════════════════════
+// Health Log
+// ══════════════════════════════════════
+async function logHealth() {
+  const s = gs();
+  if (!s.notion) { document.getElementById('h-result').innerHTML='<div class="alert err">Notion API key required — open Settings.</div>'; return; }
+  const body = {};
+  [['h-date','date','s'],['h-weight','weight','f'],['h-sleep','sleep_hours','f'],
+   ['h-slq','sleep_quality','i'],['h-mood','mood','i'],['h-energy','energy','i'],
+   ['h-steps','steps','i'],['h-water','water_glasses','i'],['h-extype','exercise_type','s'],
+   ['h-exmin','exercise_minutes','i'],['h-bps','blood_pressure_systolic','i'],
+   ['h-bpd','blood_pressure_diastolic','i'],['h-hr','heart_rate','i'],['h-notes','notes','s']
+  ].forEach(([id,key,t])=>{
+    const v=document.getElementById(id)?.value?.trim();
+    if(v) body[key]=t==='f'?parseFloat(v):t==='i'?parseInt(v):v;
+  });
+  try {
+    const d=await fetch('/api/health/log',{method:'POST',headers:hdrs(s),body:JSON.stringify(body)}).then(r=>r.json());
+    document.getElementById('h-result').innerHTML = d.success
+      ? '<div class="alert ok">✅ Saved to Notion!</div>'
+      : `<div class="alert err">${d.error||d.detail||'Failed'}</div>`;
+  } catch(e) { document.getElementById('h-result').innerHTML=`<div class="alert err">${e.message}</div>`; }
+}
+
+async function loadSummary() {
+  const s = gs();
+  if (!s.notion) { document.getElementById('sum-res').innerHTML='<div class="alert err">Notion API key required.</div>'; return; }
+  const days=document.getElementById('sum-days').value;
+  const end=new Date().toISOString().split('T')[0];
+  const start=new Date(Date.now()-days*864e5).toISOString().split('T')[0];
+  document.getElementById('sum-res').innerHTML='<div style="color:var(--muted)">Loading...</div>';
+  try {
+    const d=await fetchJson(`/api/health/summary?start_date=${start}&end_date=${end}`,{headers:hdrs(s)});
+    if (d.success) {
+      const sm=d.summary||{};
+      const rows=[
+        ['Avg Weight', sm.avg_weight?`${sm.avg_weight.toFixed(1)} lbs`:'—'],
+        ['Avg Sleep', sm.avg_sleep_hours?`${sm.avg_sleep_hours.toFixed(1)} hrs`:'—'],
+        ['Avg Mood', sm.avg_mood?`${sm.avg_mood.toFixed(1)}/10`:'—'],
+        ['Avg Energy', sm.avg_energy?`${sm.avg_energy.toFixed(1)}/10`:'—'],
+        ['Total Steps', sm.total_steps?sm.total_steps.toLocaleString():'—'],
+        ['Entries', sm.entry_count ?? sm.total_days ?? '—'],
+      ];
+      document.getElementById('sum-res').innerHTML=`<table class="rtable"><tbody>${
+        rows.map(([k,v])=>`<tr><td style="color:var(--muted)">${k}</td><td><strong>${v}</strong></td></tr>`).join('')
+      }</tbody></table>`;
+    } else { document.getElementById('sum-res').innerHTML=`<div class="alert err">${d.error||'Failed'}</div>`; }
+  } catch(e) { document.getElementById('sum-res').innerHTML=`<div class="alert err">${e.message}</div>`; }
+}
+
+// ══════════════════════════════════════
+// AI Insights
+// ══════════════════════════════════════
+async function getInsights() {
+  const s=gs();
+  if(!s.notion){document.getElementById('ins-res').innerHTML='<div class="alert err">Notion API key required.</div>';return;}
+  if(!s.aikey){document.getElementById('ins-res').innerHTML='<div class="alert err">AI API key required.</div>';return;}
+  document.getElementById('ins-load').classList.add('show');
+  document.getElementById('ins-res').innerHTML='';
+  try {
+    const includeBrain = document.getElementById('i-include-brain')?.checked;
+    const d=await fetchJson('/api/ai/insights',{method:'POST',headers:hdrs(s),body:JSON.stringify({
+      category:document.getElementById('i-cat').value,
+      period:document.getElementById('i-period').value,
+      brain_context: includeBrain ? buildBrainInsightContext() : null,
+    })});
+    if(d.success&&d.insights?.length) {
+      document.getElementById('ins-res').innerHTML=d.insights.map(ins=>`
+        <div class="icard">
+          <div class="icat">${ins.category||'insight'}</div>
+          <div style="font-size:15px;font-weight:700;margin-bottom:6px">${ins.title||'Insight'}</div>
+          <div class="itext" style="margin-bottom:10px">${ins.summary||''}</div>
+          ${renderInsightSections(ins)}
+          ${ins.recommendations?.length?`<div style="margin-top:10px"><div class="card-title" style="margin-bottom:6px">Recommendations</div><ul style="padding-left:18px;font-size:12px;color:var(--muted)">${ins.recommendations.map(r=>`<li>${r}</li>`).join('')}</ul></div>`:''}
+        </div>`).join('');
+      if (d.token_usage) {
+        showActualTokens(d.token_usage, gs().provider, 'tok-ins-actual', 'tok-ins-in', 'tok-ins-out', 'tok-ins-actual-cost');
+      }
+    } else { document.getElementById('ins-res').innerHTML=`<div class="alert warn">${d.error||'No insights generated.'}</div>`; }
+  } catch(e){document.getElementById('ins-res').innerHTML=`<div class="alert err">${e.message}</div>`;}
+  finally { document.getElementById('ins-load').classList.remove('show'); }
+}
+
+function syncBrainInsightContext() {
+  const wrap = document.getElementById('i-brain-wrap');
+  const note = document.getElementById('i-brain-note');
+  if (!wrap || !note) return;
+  const hasBrain = !!lastBrainResult?.brain_regions;
+  wrap.style.display = hasBrain ? '' : 'none';
+  note.style.display = hasBrain ? '' : 'none';
+}
+
+function buildBrainInsightContext() {
+  if (!lastBrainResult?.brain_regions) return null;
+  const topRegions = Object.entries(lastBrainResult.brain_regions || {})
+    .map(([key, val]) => {
+      const activation = typeof val === 'object' ? (val.activation_level ?? val.activation ?? val.intensity ?? 0) : val;
+      return [key, activation];
+    })
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([key]) => key.replace(/_/g, ' '));
+
+  return {
+    modality: lastBrainResult.modality || mode,
+    duration_minutes: lastBrainResult.duration_minutes || null,
+    wellness_score: lastBrainResult.wellness_score || null,
+    top_regions: topRegions,
+    summary: lastBrainResult.duration_guidance || '',
+  };
+}
+
+function renderInsightSections(ins) {
+  const sd = ins.structured_details;
+  if (!sd || typeof sd !== 'object') {
+    return ins.details ? `<div class="itext" style="white-space:pre-wrap">${ins.details}</div>` : '';
+  }
+  const order = [
+    ['metric_snapshot', 'Snapshot'],
+    ['key_strengths', 'Strengths'],
+    ['watch_items', 'Watch'],
+    ['brain_context', 'Brain Context'],
+    ['next_steps', 'Next Steps'],
+  ];
+  return order
+    .filter(([key]) => Array.isArray(sd[key]) && sd[key].length)
+    .map(([key, label]) => `
+      <div style="margin-top:10px">
+        <div class="card-title" style="margin-bottom:6px">${label}</div>
+        <ul style="padding-left:18px;font-size:12px;color:var(--muted)">
+          ${sd[key].map(item => `<li>${item}</li>`).join('')}
+        </ul>
+      </div>
+    `).join('') + (ins.details ? `<div class="itext" style="margin-top:10px">${ins.details}</div>` : '');
+}
+
+// ══════════════════════════════════════
+// Viz Gallery
+// ══════════════════════════════════════
+async function loadGallery() {
+  try {
+    const d=await fetch('/api/visualizations').then(r=>r.json());
+    const files=d.files||[];
+    const g=document.getElementById('vgallery');
+    if(!files.length){g.innerHTML='<div style="color:var(--muted);font-size:13px">No visualizations yet. Run a Brain Predict first.</div>';return;}
+    g.innerHTML=files.map(f=>`
+      <div class="vcard">
+        <div class="vname">${f.name}</div>
+        <div class="row" style="gap:6px;margin-top:4px">
+          <span class="vbadge ${f.type}">${f.type.toUpperCase()}</span>
+          <span style="font-size:10px;color:var(--muted)">${f.size_kb} KB</span>
+          <a href="${f.url}" target="_blank" class="vzlink ml">Open ↗</a>
+        </div>
+        ${f.type==='png'?`<img src="${f.url}" style="width:100%;border-radius:6px;margin-top:8px">`:
+          f.type==='gif'?`<img src="${f.url}" style="width:100%;border-radius:6px;margin-top:8px">`:''}
+      </div>`).join('');
+  } catch(e){document.getElementById('vgallery').innerHTML=`<div class="alert err">${e.message}</div>`;}
+}
+
+async function clearGallery() {
+  if (!confirm('Delete all generated visualization files from the local visualizations folder?')) {
+    return;
+  }
+  const g = document.getElementById('vgallery');
+  g.innerHTML = '<div style="color:var(--muted);font-size:13px">Clearing saved outputs...</div>';
+  try {
+    const d = await fetchJson('/api/visualizations/clear', { method: 'POST' });
+    const msg = d.deleted_count
+      ? `<div class="alert ok">Deleted ${d.deleted_count} saved output files.</div>`
+      : '<div class="alert info">No saved output files were found.</div>';
+    g.innerHTML = msg;
+    await loadGallery();
+  } catch (e) {
+    g.innerHTML = `<div class="alert err">${e.message}</div>`;
+  }
+}
+
+// ══════════════════════════════════════
+// Token estimation
+// ══════════════════════════════════════
+const PRICING = {
+  anthropic: { in: 3e-6,    out: 15e-6,   label: 'Claude Sonnet' },
+  openai:    { in: 5e-6,    out: 15e-6,   label: 'GPT-4o' },
+  gemini:    { in: 7.5e-8,  out: 3e-7,    label: 'Gemini Flash' },
+};
+
+function _tokFmt(n)   { return n >= 1000 ? (n/1000).toFixed(1)+'k' : String(n); }
+function _tokCls(n)   { return n < 500 ? 'low' : n < 3000 ? 'mid' : 'hi'; }
+function _tokCostStr(n) {
+  const p = gs().provider || 'anthropic';
+  const c = PRICING[p] || PRICING.anthropic;
+  const usd = n * c.in;
+  return `≈ $${usd < 0.01 ? usd.toFixed(4) : usd.toFixed(3)} input (${c.label})`;
+}
+
+function _setTokEl(badgeId, costId, n) {
+  const b = document.getElementById(badgeId);
+  const c = document.getElementById(costId);
+  if (b) { b.textContent = _tokFmt(n) + ' tokens'; b.className = 'tbadge ' + _tokCls(n); }
+  if (c) { c.textContent = n > 0 ? _tokCostStr(n) : ''; }
+}
+
+function tokEstText() {
+  const text = document.getElementById('txt').value;
+  const n = Math.max(1, Math.round(text.length / 3.8));
+  _setTokEl('tok-txt-n', 'tok-txt-cost', n);
+  // also update the predict button summary
+  const badge = document.getElementById('tok-predict-n');
+  if (badge) { badge.style.display = ''; badge.textContent = _tokFmt(n) + ' tokens'; badge.className = 'tbadge ' + _tokCls(n); }
+  document.getElementById('tok-predict-cost').textContent = _tokCostStr(n);
+}
+
+function tokEstFile(type) {
+  const f = document.getElementById(`f-${type}`).files[0];
+  if (!f) return;
+  document.getElementById(`fn-${type}`).textContent = `✅ ${f.name}`;
+  const mb = f.size / (1024 * 1024);
+  let n;
+  if (type === 'audio') {
+    // ~1 MB MP3 ≈ 1 min → ~180 transcription tokens + 200 overhead
+    n = Math.round(mb * 180 + 200);
+  } else {
+    // ~10 MB/min video → audio transcription + visual context
+    n = Math.round((mb / 10) * 180 + 500);
+  }
+  const row = document.getElementById(`tok-${type}`);
+  if (row) row.style.display = '';
+  _setTokEl(`tok-${type}-n`, `tok-${type}-cost`, n);
+  const badge = document.getElementById('tok-predict-n');
+  if (badge) { badge.style.display = ''; badge.textContent = _tokFmt(n) + ' tokens'; badge.className = 'tbadge ' + _tokCls(n); }
+  document.getElementById('tok-predict-cost').textContent = _tokCostStr(n);
+}
+
+function tokEstInsights() {
+  const period = document.getElementById('i-period').value;
+  const days = period === 'week' ? 7 : 30;
+  const healthToks  = days * 120;  // ~120 tokens/health record
+  const medToks     = 3  * 80;    // ~3 meds average, 80 tokens each
+  const symToks     = Math.round(days / 3) * 100; // symptoms roughly every 3 days
+  const systemToks  = 600;
+  const total = healthToks + medToks + symToks + systemToks;
+  _setTokEl('tok-ins-n', 'tok-ins-cost', total);
+  const f = n => _tokFmt(n) + ' tokens';
+  const el = id => { const e=document.getElementById(id); if(e) e.textContent=f(0); };
+  const setDB = (id, n) => { const e=document.getElementById(id); if(e) e.textContent=f(n); };
+  setDB('db-health-est', healthToks);
+  setDB('db-med-est', medToks);
+  setDB('db-sym-est', symToks);
+}
+
+function showActualTokens(usage, provider, containerId, inId, outId, costId) {
+  if (!usage) return;
+  const inToks  = usage.input_tokens  || 0;
+  const outToks = usage.output_tokens || 0;
+  const row = document.getElementById(containerId);
+  if (row) row.style.display = '';
+  const bi = document.getElementById(inId);
+  const bo = document.getElementById(outId);
+  const bc = document.getElementById(costId);
+  if (bi) { bi.textContent = _tokFmt(inToks) + ' in'; bi.className = 'tbadge ' + _tokCls(inToks); }
+  if (bo) { bo.textContent = _tokFmt(outToks) + ' out'; bo.className = 'tbadge low'; }
+  if (bc) {
+    const p = provider || gs().provider || 'anthropic';
+    const c = PRICING[p] || PRICING.anthropic;
+    const usd = inToks * c.in + outToks * c.out;
+    bc.textContent = `≈ $${usd < 0.01 ? usd.toFixed(4) : usd.toFixed(3)} (${c.label})`;
+  }
+}
+
+// ══════════════════════════════════════
+// Init
+// ══════════════════════════════════════
+window.addEventListener('load', ()=>{
+  // Set today's date in health form
+  document.getElementById('h-date').value = new Date().toISOString().split('T')[0];
+  updateStatusBar();
+  checkStatus();
+  loadDurationOptions();
+  syncBrainInsightContext();
+  tokEstInsights(); // init token estimate for insights tab
+});
+</script>
+</body>
+</html>

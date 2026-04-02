@@ -1,0 +1,233 @@
+{
+  "dashboard_page": {
+    "title": "🏥 NotionHealth AI Dashboard",
+    "icon": "🏥",
+    "cover": "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1920",
+    "description": "Your personal AI-powered health & wellness management center with brain prediction"
+  },
+  "sections": [
+    {
+      "type": "heading",
+      "level": 1,
+      "content": "👋 Welcome to NotionHealth AI"
+    },
+    {
+      "type": "callout",
+      "icon": "🧠",
+      "color": "blue_background",
+      "content": "This dashboard can use Meta's TRIBEv2 brain prediction model for activity-based brain analysis when the model stack is available."
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "📊 Quick Health Log"
+    },
+    {
+      "type": "paragraph",
+      "content": "Use the form below to quickly log your daily health metrics. All entries are saved to the Health Metrics database."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "📈 Today's Overview"
+    },
+    {
+      "type": "paragraph",
+      "content": "View your latest health metrics and trends at a glance."
+    },
+    {
+      "type": "database_view",
+      "database": "health_metrics",
+      "view_name": "Latest Entry",
+      "view_type": "list",
+      "filter": {
+        "property": "Date",
+        "date": "today"
+      }
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "🧠 TRIBEv2 Brain Predictions"
+    },
+    {
+      "type": "toggle",
+      "title": "🎯 Predict Brain Response",
+      "content": "Learn how your brain responds to different activities:\n\n**Supported Activities:**\n- 🏃 Exercise - Motor cortex, hippocampus activation\n- 🧘 Meditation - Prefrontal cortex training, amygdala calming\n- 😴 Sleep - Memory consolidation, glymphatic clearance\n- 📚 Reading - Cognitive reserve, language processing\n- 🎵 Music - Auditory cortex, emotional processing\n- 👥 Social - Oxytocin release, temporal lobe activation\n- 🌿 Nature - Visual cortex restoration, stress reduction\n- 🎨 Creative - Default mode network, problem-solving\n\nUse the Brain Predictions database to log and track predictions!"
+    },
+    {
+      "type": "toggle",
+      "title": "⏰ Optimal Activity Timing",
+      "content": "**Best Times for Different Activities:**\n\n| Time | Recommended Activity |\n|------|---------------------|\n| 6:00-6:30 AM | Morning Meditation |\n| 6:30-7:30 AM | Exercise (peak cortisol) |\n| 9:00 AM-12:00 PM | Deep Work/Learning |\n| 2:00-4:00 PM | Creative Work |\n| 4:00-6:00 PM | Social Activities |\n| 8:30-9:00 PM | Evening Wind-Down |\n| 10:00 PM-6:00 AM | Sleep (8 hours) |"
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "💊 Medication Tracker"
+    },
+    {
+      "type": "database_view",
+      "database": "medications",
+      "view_name": "Today's Schedule",
+      "view_type": "list",
+      "filter": {
+        "property": "Active",
+        "checkbox": true
+      }
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "📅 Upcoming Appointments"
+    },
+    {
+      "type": "database_view",
+      "database": "appointments",
+      "view_name": "Upcoming",
+      "view_type": "list",
+      "filter": {
+        "property": "Date",
+        "date": "next_30_days"
+      },
+      "sort": {
+        "property": "Date",
+        "direction": "ascending"
+      }
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "🎯 Health Goals"
+    },
+    {
+      "type": "database_view",
+      "database": "goals",
+      "view_name": "Active Goals",
+      "view_type": "gallery",
+      "filter": {
+        "or": [
+          {"property": "Status", "select": "in_progress"},
+          {"property": "Status", "select": "on_track"}
+        ]
+      },
+      "sort": {
+        "property": "Target Date",
+        "direction": "ascending"
+      }
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "📝 Symptom Log"
+    },
+    {
+      "type": "database_view",
+      "database": "symptoms",
+      "view_name": "Recent Symptoms",
+      "view_type": "table",
+      "sort": {
+        "property": "Date",
+        "direction": "descending"
+      }
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "🤖 AI Commands Reference"
+    },
+    {
+      "type": "callout",
+      "icon": "💬",
+      "color": "gray_background",
+      "content": "**Using with Claude Desktop:**\n\nAfter setting up MCP, you can ask Claude:\n• \"Log my weight as 165 pounds\"\n• \"How did I sleep this week?\"\n• \"Predict my brain response to 30 minutes of meditation\"\n• \"What's the best time to exercise?\"\n• \"Set a goal to lose 10 pounds by June\"\n• \"What medications do I need today?\""
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": "📊 All Databases"
+    },
+    {
+      "type": "linked_database",
+      "database": "health_metrics",
+      "view_name": "All Entries",
+      "view_type": "table"
+    },
+    {
+      "type": "linked_database",
+      "database": "medications",
+      "view_name": "All Medications",
+      "view_type": "table"
+    },
+    {
+      "type": "linked_database",
+      "database": "appointments",
+      "view_name": "All Appointments",
+      "view_type": "table"
+    },
+    {
+      "type": "linked_database",
+      "database": "goals",
+      "view_name": "All Goals",
+      "view_type": "table"
+    },
+    {
+      "type": "linked_database",
+      "database": "symptoms",
+      "view_name": "All Symptoms",
+      "view_type": "table"
+    },
+    {
+      "type": "linked_database",
+      "database": "brain_analysis",
+      "view_name": "All Predictions",
+      "view_type": "table"
+    }
+  ],
+  "quick_actions": [
+    {
+      "name": "Log Health Metric",
+      "description": "Add a new health entry",
+      "database": "health_metrics"
+    },
+    {
+      "name": "Add Medication",
+      "description": "Track a new medication",
+      "database": "medications"
+    },
+    {
+      "name": "Schedule Appointment",
+      "description": "Add a medical appointment",
+      "database": "appointments"
+    },
+    {
+      "name": "Set Goal",
+      "description": "Create a health goal",
+      "database": "goals"
+    },
+    {
+      "name": "Log Symptom",
+      "description": "Record a symptom",
+      "database": "symptoms"
+    },
+    {
+      "name": "Brain Prediction",
+      "description": "Log brain response prediction",
+      "database": "brain_analysis"
+    }
+  ]
+}
